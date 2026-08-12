@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Pegawai PLN Nusantara Power</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../partials/sidebar') %>
+  <%- include('../partials/topbar', { pageTitle: 'Data Pegawai' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <p class="text-sm text-gray-400">Kelola data pegawai unit UPBW Belawan</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="/pegawai/custom-fields" class="bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 flex items-center gap-2">
+          <span>⚙️</span> Kelola Field
+        </a>
+        <a href="/pegawai/tambah" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-2">
+          <span>+</span> Tambah Pegawai
+        </a>
+      </div>
+    </div>
+
+    <!-- Stat ringkas -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-blue-50 flex items-center justify-center text-xl">👥</div>
+        <div>
+          <p class="text-xs text-gray-400">Total Pegawai</p>
+          <p class="text-xl font-bold text-gray-800"><%= pegawai.length %></p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-purple-50 flex items-center justify-center text-xl">♂️</div>
+        <div>
+          <p class="text-xs text-gray-400">Laki-laki</p>
+          <p class="text-xl font-bold text-gray-800"><%= pegawai.filter(p => p.jenis_kelamin === 'L').length %></p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-pink-50 flex items-center justify-center text-xl">♀️</div>
+        <div>
+          <p class="text-xs text-gray-400">Perempuan</p>
+          <p class="text-xl font-bold text-gray-800"><%= pegawai.filter(p => p.jenis_kelamin === 'P').length %></p>
+        </div>
+      </div>
+    </div>
+
+    <% if (successMsg && successMsg.length > 0) { %>
+      <div class="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"><%= successMsg %></div>
+    <% } %>
+    <% if (errorMsg && errorMsg.length > 0) { %>
+      <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"><%= errorMsg %></div>
+    <% } %>
+
+    <!-- Search -->
+    <div class="mb-4">
+      <div class="relative max-w-sm">
+        <input type="text" id="search-pegawai" placeholder="Cari nama atau NIP..." 
+          class="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-5 py-3 font-semibold">NIP</th>
+            <th class="px-5 py-3 font-semibold">Nama</th>
+            <th class="px-5 py-3 font-semibold">Jabatan</th>
+            <th class="px-5 py-3 font-semibold">Golongan</th>
+            <th class="px-5 py-3 font-semibold">Tempat, Tgl Lahir</th>
+            <th class="px-5 py-3 font-semibold">JK</th>
+            <th class="px-5 py-3 font-semibold text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100" id="tbody-pegawai">
+          <% pegawai.forEach(p => { %>
+            <tr class="hover:bg-gray-50 transition baris-pegawai" data-nama="<%= p.nama.toLowerCase() %>" data-nip="<%= p.nip.toLowerCase() %>">
+              <td class="px-5 py-3.5 text-gray-500"><%= p.nip %></td>
+              <td class="px-5 py-3.5 font-medium text-gray-800">
+                <button onclick="openDetail(<%= p.id %>)" class="hover:text-brand-blue text-left"><%= p.nama %></button>
+              </td>
+              <td class="px-5 py-3.5 text-gray-600"><%= p.jabatan || '-' %></td>
+              <td class="px-5 py-3.5">
+                <% if (p.golongan) { %>
+                  <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs font-semibold"><%= p.golongan %></span>
+                <% } else { %>
+                  <span class="text-gray-300">-</span>
+                <% } %>
+              </td>
+              <td class="px-5 py-3.5 text-gray-500 text-xs">
+                <%= p.tempat_lahir || '-' %><% if (p.tanggal_lahir) { %>, <%= new Date(p.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %><% } %>
+              </td>
+              <td class="px-5 py-3.5">
+                <span class="px-2 py-0.5 rounded text-xs font-semibold <%= p.jenis_kelamin === 'L' ? 'bg-purple-50 text-purple-600' : 'bg-pink-50 text-pink-600' %>">
+                  <%= p.jenis_kelamin %>
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-right space-x-3">
+                <a href="/pegawai/edit/<%= p.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a>
+                <a href="/pegawai/hapus/<%= p.id %>" class="text-red-600 hover:underline text-sm font-medium">Hapus</a>
+              </td>
+            </tr>
+          <% }) %>
+          <% if (pegawai.length === 0) { %>
+            <tr><td colspan="7" class="px-5 py-10 text-center text-gray-400">Belum ada data pegawai</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Modal Detail Pegawai -->
+  <div id="detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto p-6 relative">
+      <button onclick="closeDetail()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+      <h2 class="text-lg font-bold text-gray-800 mb-4">Detail Pegawai</h2>
+      <div id="detail-content" class="space-y-2 text-sm">
+        <p class="text-gray-400">Memuat data...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('search-pegawai').addEventListener('input', function() {
+      const keyword = this.value.toLowerCase().trim();
+      document.querySelectorAll('.baris-pegawai').forEach(row => {
+        const cocok = row.getAttribute('data-nama').includes(keyword) || row.getAttribute('data-nip').includes(keyword);
+        row.style.display = cocok ? '' : 'none';
+      });
+    });
+
+    async function openDetail(id) {
+      document.getElementById('detail-modal').classList.remove('hidden');
+      document.getElementById('detail-content').innerHTML = '<p class="text-gray-400">Memuat data...</p>';
+      try {
+        const res = await fetch('/pegawai/detail/' + id + '/json');
+        const data = await res.json();
+        if (data.error) {
+          document.getElementById('detail-content').innerHTML = '<p class="text-red-500">' + data.error + '</p>';
+          return;
+        }
+        const baris = (label, value) => `
+          <div class="flex justify-between border-b border-gray-100 pb-2">
+            <span class="text-gray-500">${label}</span>
+            <span class="font-medium text-gray-800 text-right">${value || '-'}</span>
+          </div>`;
+        let html = '';
+        html += baris('NIP', data.pegawai.nip);
+        html += baris('Nama', data.pegawai.nama);
+        html += baris('Jabatan', data.pegawai.jabatan);
+        html += baris('Golongan', data.pegawai.golongan);
+        html += baris('Tempat Lahir', data.pegawai.tempat_lahir);
+        html += baris('Tanggal Lahir', data.pegawai.tanggal_lahir ? new Date(data.pegawai.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null);
+        html += baris('Jenis Kelamin', data.pegawai.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan');
+        data.customFields.forEach(f => { html += baris(f.field_label, f.value); });
+        document.getElementById('detail-content').innerHTML = html;
+      } catch (err) {
+        document.getElementById('detail-content').innerHTML = '<p class="text-red-500">Gagal memuat data</p>';
+      }
+    }
+    function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
+    document.getElementById('detail-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'detail-modal') closeDetail();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kelola User - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-100">
+  <nav class="bg-brand-blue px-6 py-4 flex justify-between items-center">
+    <span class="text-white font-bold">e-Kinerja HC</span>
+    <div class="text-white text-sm flex items-center gap-4">
+      <a href="/dashboard" class="underline">Dashboard</a>
+      <span><%= user.nama %> (<%= user.role %>)</span>
+      <a href="/logout" class="bg-brand-yellow text-gray-800 px-3 py-1 rounded-lg font-semibold">Logout</a>
+    </div>
+  </nav>
+
+  <div class="p-8">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold text-gray-800">Kelola User</h1>
+      <a href="/kelola-user/tambah" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-semibold">+ Tambah User</a>
+    </div>
+
+    <% if (successMsg && successMsg.length > 0) { %>
+      <div class="bg-green-100 text-green-700 text-sm px-3 py-2 rounded mb-4"><%= successMsg %></div>
+    <% } %>
+
+    <table class="w-full bg-white rounded-xl shadow overflow-hidden">
+      <thead class="bg-gray-100 text-left text-sm text-gray-600">
+        <tr>
+          <th class="px-4 py-3">Nama</th>
+          <th class="px-4 py-3">Email</th>
+          <th class="px-4 py-3">Role</th>
+          <th class="px-4 py-3">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(u => { %>
+          <tr class="border-t text-sm">
+            <td class="px-4 py-3"><%= u.nama %></td>
+            <td class="px-4 py-3"><%= u.email %></td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 rounded-full bg-brand-yellow text-xs font-semibold"><%= u.nama_role %></span>
+            </td>
+            <td class="px-4 py-3">
+              <form action="/kelola-user/hapus/<%= u.id %>" method="POST" onsubmit="return confirm('Yakin hapus user ini?')">
+                <button class="text-red-600 hover:underline">Hapus</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

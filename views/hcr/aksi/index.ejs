@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>MLI AKSI - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'MLI AKSI' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex justify-between items-start flex-wrap gap-4">
+        <div>
+          <p class="text-lg font-bold text-gray-800">MLI AKSI</p>
+          <p class="text-gray-400 text-sm mt-0.5">Action plan board — monitor aksi perbaikan unit kerja</p>
+        </div>
+        <form method="GET" class="flex items-end gap-2">
+          <select name="bulan" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].forEach((nm, i) => { %>
+              <option value="<%= i+1 %>" <%= (i+1) === bulan ? 'selected' : '' %>><%= nm %></option>
+            <% }) %>
+          </select>
+          <input type="number" name="tahun" value="<%= tahun %>" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 w-24 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+          <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700">Tampilkan</button>
+        </form>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-gray-100">
+        <div>
+          <p class="text-xs text-gray-400">Total Aksi</p>
+          <p class="text-xl font-bold text-gray-800 mt-0.5"><%= totalAksi %></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">% Selesai</p>
+          <p class="text-xl font-bold text-green-600 mt-0.5"><%= persentase %>%</p>
+        </div>
+      </div>
+    </div>
+
+    <% if (successMsg && successMsg.length > 0) { %>
+      <div class="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"><%= successMsg %></div>
+    <% } %>
+
+    <div class="flex justify-between items-center mb-4">
+      <p class="font-bold text-gray-800 text-sm">Papan Aksi</p>
+      <% if (user.role === 'admin' || user.role === 'input') { %>
+        <a href="/hcr-aksi/tambah?bulan=<%= bulan %>&tahun=<%= tahun %>" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Tambah Aksi
+        </a>
+      <% } %>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Kolom Belum -->
+      <div class="bg-gray-100 rounded-xl border border-gray-200 p-3">
+        <h3 class="font-bold text-gray-600 text-xs uppercase tracking-wider mb-3 px-2 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-red-500"></span> Belum (<%= kolomBelum.length %>)
+        </h3>
+        <div class="space-y-2">
+          <% kolomBelum.forEach(a => { %>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-3">
+              <p class="font-semibold text-sm text-gray-800"><%= a.nama_aksi %></p>
+              <p class="text-xs text-gray-500 mt-1">PIC: <%= a.nama_pic || '-' %></p>
+              <p class="text-xs text-gray-400"><%= a.target_selesai ? 'Target: ' + new Date(a.target_selesai).toLocaleDateString('id-ID') : '' %></p>
+              <div class="flex justify-between items-center mt-2.5 pt-2.5 border-t border-gray-50">
+                <a href="/hcr-aksi/edit/<%= a.id %>" class="text-xs text-blue-600 hover:underline font-medium">Edit</a>
+                <button onclick="ubahStatus(<%= a.id %>, 'Proses')" class="text-xs bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-full font-semibold hover:bg-yellow-100">→ Proses</button>
+              </div>
+            </div>
+          <% }) %>
+          <% if (kolomBelum.length === 0) { %>
+            <p class="text-center text-xs text-gray-400 py-6">Tidak ada aksi</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Kolom Proses -->
+      <div class="bg-gray-100 rounded-xl border border-gray-200 p-3">
+        <h3 class="font-bold text-gray-600 text-xs uppercase tracking-wider mb-3 px-2 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-yellow-500"></span> Proses (<%= kolomProses.length %>)
+        </h3>
+        <div class="space-y-2">
+          <% kolomProses.forEach(a => { %>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-3">
+              <p class="font-semibold text-sm text-gray-800"><%= a.nama_aksi %></p>
+              <p class="text-xs text-gray-500 mt-1">PIC: <%= a.nama_pic || '-' %></p>
+              <p class="text-xs text-gray-400"><%= a.target_selesai ? 'Target: ' + new Date(a.target_selesai).toLocaleDateString('id-ID') : '' %></p>
+              <div class="flex justify-between items-center mt-2.5 pt-2.5 border-t border-gray-50">
+                <a href="/hcr-aksi/edit/<%= a.id %>" class="text-xs text-blue-600 hover:underline font-medium">Edit</a>
+                <button onclick="ubahStatus(<%= a.id %>, 'Selesai')" class="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full font-semibold hover:bg-green-100">→ Selesai</button>
+              </div>
+            </div>
+          <% }) %>
+          <% if (kolomProses.length === 0) { %>
+            <p class="text-center text-xs text-gray-400 py-6">Tidak ada aksi</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Kolom Selesai -->
+      <div class="bg-gray-100 rounded-xl border border-gray-200 p-3">
+        <h3 class="font-bold text-gray-600 text-xs uppercase tracking-wider mb-3 px-2 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-green-500"></span> Selesai (<%= kolomSelesai.length %>)
+        </h3>
+        <div class="space-y-2">
+          <% kolomSelesai.forEach(a => { %>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-3 opacity-80">
+              <p class="font-semibold text-sm text-gray-800 line-through"><%= a.nama_aksi %></p>
+              <p class="text-xs text-gray-500 mt-1">PIC: <%= a.nama_pic || '-' %></p>
+              <div class="flex justify-between items-center mt-2.5 pt-2.5 border-t border-gray-50">
+                <a href="/hcr-aksi/edit/<%= a.id %>" class="text-xs text-blue-600 hover:underline font-medium">Edit</a>
+                <% if (user.role === 'admin') { %>
+                  <form action="/hcr-aksi/hapus/<%= a.id %>" method="POST" onsubmit="return confirm('Yakin hapus?')">
+                    <button class="text-xs text-red-600 hover:underline font-medium">Hapus</button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+          <% if (kolomSelesai.length === 0) { %>
+            <p class="text-center text-xs text-gray-400 py-6">Tidak ada aksi</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function ubahStatus(id, statusBaru) {
+      await fetch(`/hcr-aksi/status/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `status=${statusBaru}`
+      });
+      location.reload();
+    }
+  </script>
+</body>
+</html>

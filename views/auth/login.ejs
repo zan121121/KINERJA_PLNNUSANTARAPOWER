@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-100">
+  <div class="min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-sm border-t-4 border-brand-blue">
+      <h1 class="text-xl font-bold text-gray-800 text-center">e-Kinerja HC</h1>
+      <p class="text-center text-gray-500 text-sm mb-6">Portal Monitoring HCR - OCR</p>
+
+      <% if (errorMsg && errorMsg.length > 0) { %>
+        <div class="bg-red-100 text-red-700 text-sm px-3 py-2 rounded mb-4">
+          <%= errorMsg %>
+        </div>
+      <% } %>
+
+      <form action="/login" method="POST" class="space-y-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Email</label>
+          <input type="email" name="email" required
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Password</label>
+          <input type="password" name="password" required
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <button type="submit"
+          class="w-full bg-brand-blue text-white font-semibold py-2 rounded-lg hover:opacity-90 transition">
+          Masuk
+        </button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

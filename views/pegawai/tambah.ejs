@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Tambah Pegawai - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../partials/sidebar') %>
+  <%- include('../partials/topbar', { pageTitle: 'Tambah Pegawai' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <a href="/pegawai" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-blue mb-4">← Kembali ke Data Pegawai</a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl">
+      <h2 class="text-base font-bold text-gray-800 mb-1">Tambah Data Pegawai</h2>
+      <p class="text-sm text-gray-400 mb-5">Lengkapi form di bawah untuk menambahkan pegawai baru</p>
+
+      <% if (errorMsg && errorMsg.length > 0) { %>
+        <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"><%= errorMsg %></div>
+      <% } %>
+
+      <form action="/pegawai/tambah" method="POST" class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">NIP</label>
+          <input type="text" name="nip" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama</label>
+          <input type="text" name="nama" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Jabatan</label>
+          <input type="text" name="jabatan" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Golongan/Grade</label>
+          <input type="text" name="golongan" placeholder="Contoh: III/A" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Tempat Lahir</label>
+          <input type="text" name="tempat_lahir" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Tanggal Lahir</label>
+          <input type="date" name="tanggal_lahir" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Jenis Kelamin</label>
+          <select name="jenis_kelamin" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="L">Laki-laki</option>
+            <option value="P">Perempuan</option>
+          </select>
+        </div>
+
+        <% if (typeof customFields !== 'undefined') { %>
+          <% customFields.forEach(field => { %>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1.5"><%= field.field_label %></label>
+              <% if (field.field_type === 'dropdown') { %>
+                <select name="custom_<%= field.id %>" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                  <% field.options.split(',').forEach(opt => { %>
+                    <option value="<%= opt.trim() %>"><%= opt.trim() %></option>
+                  <% }) %>
+                </select>
+              <% } else { %>
+                <input type="<%= field.field_type %>" name="custom_<%= field.id %>" 
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+              <% } %>
+            </div>
+          <% }) %>
+        <% } %>
+
+        <div class="col-span-2 flex gap-3 mt-2">
+          <a href="/pegawai" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</a>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

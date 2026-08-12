@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Input Realisasi HCR - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-100">
+  <nav class="bg-brand-blue px-6 py-4 flex justify-between items-center">
+    <span class="text-white font-bold">e-Kinerja HC</span>
+    <div class="text-white text-sm flex items-center gap-4">
+      <a href="/dashboard" class="underline">Dashboard</a>
+      <span><%= user.nama %> (<%= user.role %>)</span>
+      <a href="/logout" class="bg-brand-yellow text-gray-800 px-3 py-1 rounded-lg font-semibold">Logout</a>
+    </div>
+  </nav>
+
+  <div class="p-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Pilih Pegawai — Input Realisasi HCR</h1>
+
+    <table class="w-full bg-white rounded-xl shadow overflow-hidden">
+      <thead class="bg-gray-100 text-left text-sm text-gray-600">
+        <tr>
+          <th class="px-4 py-3">NIP</th>
+          <th class="px-4 py-3">Nama</th>
+          <th class="px-4 py-3">Jabatan</th>
+          <th class="px-4 py-3">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% pegawai.forEach(p => { %>
+          <tr class="border-t text-sm">
+            <td class="px-4 py-3"><%= p.nip %></td>
+            <td class="px-4 py-3"><%= p.nama %></td>
+            <td class="px-4 py-3"><%= p.jabatan || '-' %></td>
+            <td class="px-4 py-3">
+              <a href="/hcr-realisasi/input/<%= p.id %>" class="bg-brand-blue text-white px-3 py-1 rounded-lg text-xs font-semibold">
+                Input HCR
+              </a>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (pegawai.length === 0) { %>
+          <tr><td colspan="4" class="px-4 py-6 text-center text-gray-400">Belum ada data pegawai</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

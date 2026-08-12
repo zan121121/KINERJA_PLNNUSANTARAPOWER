@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Tambah Jadwal PPK - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'Tambah Jadwal PPK' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <a href="/hcr-pelaksanaan" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-blue mb-4">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      Kembali
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-xl">
+      <p class="text-base font-bold text-gray-800 mb-1">Tambah Jadwal & Monitoring PPK</p>
+      <p class="text-sm text-gray-400 mb-5">Lengkapi form untuk menambahkan jadwal dan log aktivitas pengembangan</p>
+
+      <% if (errorMsg && errorMsg.length > 0) { %>
+        <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"><%= errorMsg %></div>
+      <% } %>
+
+      <form action="/hcr-pelaksanaan/tambah" method="POST" class="space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Pegawai</label>
+          <select name="pegawai_id" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% pegawai.forEach(p => { %>
+              <option value="<%= p.id %>"><%= p.nama %> (<%= p.nip %>)</option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama Kegiatan</label>
+          <input type="text" name="nama_kegiatan" required placeholder="Contoh: Pelatihan Manajerial Tahap 1"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Jadwal Tanggal</label>
+          <input type="date" name="jadwal_tanggal"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Status</label>
+          <select name="status" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="Terjadwal">Terjadwal</option>
+            <option value="Berlangsung">Berlangsung</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Terlambat">Terlambat</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Log Aktivitas</label>
+          <textarea name="log_aktivitas" rows="3" placeholder="Catatan perkembangan kegiatan bulan ini"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <a href="/hcr-pelaksanaan" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</a>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Field - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'Edit Field Tambahan' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <a href="/pegawai/custom-fields" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-blue mb-4">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      Kembali
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-md">
+      <p class="text-base font-bold text-gray-800 mb-1">Edit Field</p>
+
+      <div class="bg-amber-50 border border-amber-200 text-amber-700 text-xs px-4 py-3 rounded-lg mb-5">
+        Menyimpan perubahan akan mengosongkan data yang sudah terisi pada field ini di semua pegawai. Data field lain tidak terpengaruh.
+      </div>
+
+      <% if (errorMsg && errorMsg.length > 0) { %>
+        <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"><%= errorMsg %></div>
+      <% } %>
+
+      <form action="/pegawai/custom-fields/edit/<%= field.id %>" method="POST" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama Field</label>
+          <input type="text" name="field_label" required value="<%= field.field_label %>"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Tipe Field</label>
+          <select name="field_type" id="field_type" required
+            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="text" <%= field.field_type === 'text' ? 'selected' : '' %>>Teks Bebas</option>
+            <option value="number" <%= field.field_type === 'number' ? 'selected' : '' %>>Angka</option>
+            <option value="date" <%= field.field_type === 'date' ? 'selected' : '' %>>Tanggal</option>
+            <option value="dropdown" <%= field.field_type === 'dropdown' ? 'selected' : '' %>>Dropdown (Pilihan)</option>
+          </select>
+        </div>
+
+        <div id="options-wrapper" class="<%= field.field_type === 'dropdown' ? '' : 'hidden' %> border border-gray-100 rounded-lg p-4 bg-gray-50">
+          <label class="block text-sm font-semibold text-gray-700 mb-2.5">Pilihan Dropdown</label>
+          <div id="options-list" class="space-y-2">
+            <% 
+              const existingOptions = field.options ? field.options.split(',').filter(o => o.trim().length > 0) : [];
+              const optionsToShow = existingOptions.length > 0 ? existingOptions : [''];
+            %>
+            <% optionsToShow.forEach(opt => { %>
+              <div class="flex gap-2 option-row">
+                <input type="text" name="option_items[]" value="<%= opt.trim() %>" placeholder="Contoh: Organik"
+                  class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                <button type="button" class="hapus-opsi bg-red-50 text-red-600 w-9 h-9 rounded-lg font-bold shrink-0 hover:bg-red-100">×</button>
+              </div>
+            <% }) %>
+          </div>
+          <button type="button" id="tambah-opsi" class="mt-3 text-sm text-brand-blue font-semibold flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Pilihan
+          </button>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <a href="/pegawai/custom-fields" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</a>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const tipeSelect = document.getElementById('field_type');
+    const optionsWrapper = document.getElementById('options-wrapper');
+    const optionsList = document.getElementById('options-list');
+    const tambahOpsiBtn = document.getElementById('tambah-opsi');
+
+    tipeSelect.addEventListener('change', () => {
+      optionsWrapper.classList.toggle('hidden', tipeSelect.value !== 'dropdown');
+    });
+
+    tambahOpsiBtn.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 option-row';
+      row.innerHTML = `
+        <input type="text" name="option_items[]" placeholder="Pilihan lain..."
+          class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        <button type="button" class="hapus-opsi bg-red-50 text-red-600 w-9 h-9 rounded-lg font-bold shrink-0 hover:bg-red-100">×</button>
+      `;
+      optionsList.appendChild(row);
+    });
+
+    optionsList.addEventListener('click', (e) => {
+      if (e.target.classList.contains('hapus-opsi')) {
+        const rows = optionsList.querySelectorAll('.option-row');
+        if (rows.length > 1) {
+          e.target.closest('.option-row').remove();
+        } else {
+          e.target.closest('.option-row').querySelector('input').value = '';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

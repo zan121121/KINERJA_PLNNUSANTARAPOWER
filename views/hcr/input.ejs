@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Input HCR - <%= pegawai.nama %></title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-100">
+  <nav class="bg-brand-blue px-6 py-4 flex justify-between items-center">
+    <span class="text-white font-bold">e-Kinerja HC</span>
+    <a href="/hcr-realisasi" class="text-white underline text-sm">← Kembali</a>
+  </nav>
+
+  <div class="p-8">
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+      <h1 class="text-xl font-bold text-gray-800">Input Realisasi HCR</h1>
+      <p class="text-gray-500 text-sm mt-1">
+        Pegawai: <span class="font-semibold"><%= pegawai.nama %></span> (<%= pegawai.nip %>)
+      </p>
+
+      <% if (successMsg && successMsg.length > 0) { %>
+        <div class="bg-green-100 text-green-700 text-sm px-3 py-2 rounded mt-3"><%= successMsg %></div>
+      <% } %>
+
+      <form method="GET" class="flex items-end gap-3 mt-4">
+        <div>
+          <label class="block text-xs text-gray-600 mb-1">Bulan</label>
+          <select name="bulan" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <% for (let b = 1; b <= 12; b++) { %>
+              <option value="<%= b %>" <%= b === bulan ? 'selected' : '' %>><%= b %></option>
+            <% } %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-600 mb-1">Tahun</label>
+          <input type="number" name="tahun" value="<%= tahun %>" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-24">
+        </div>
+        <button type="submit" class="bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">Tampilkan</button>
+      </form>
+    </div>
+
+    <form action="/hcr-realisasi/input/<%= pegawai.id %>" method="POST">
+      <input type="hidden" name="bulan" value="<%= bulan %>">
+      <input type="hidden" name="tahun" value="<%= tahun %>">
+
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-gray-100 text-left text-sm text-gray-600">
+            <tr>
+              <th class="px-4 py-3">Item HCR</th>
+              <th class="px-4 py-3">Tipe</th>
+              <th class="px-4 py-3 w-28">Target</th>
+              <th class="px-4 py-3 w-28">Capaian</th>
+              <th class="px-4 py-3 w-20">Skor</th>
+              <th class="px-4 py-3">Keterangan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% items.forEach(item => { %>
+              <tr class="border-t text-sm">
+                <td class="px-4 py-3">
+                  <%= item.nama_item %>
+                  <input type="hidden" name="item_id[]" value="<%= item.item_id %>">
+                </td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-1 rounded-full text-xs font-semibold <%= item.tipe === 'MLI' ? 'bg-brand-yellow' : 'bg-blue-100' %>">
+                    <%= item.tipe %>
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <input type="number" step="0.01" name="target[]" 
+                    value="<%= item.target !== null ? item.target : 100 %>"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1">
+                </td>
+                <td class="px-4 py-3">
+                  <input type="number" step="0.01" name="capaian[]" 
+                    value="<%= item.capaian !== null ? item.capaian : 0 %>"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1">
+                </td>
+                <td class="px-4 py-3 text-gray-500">
+                  <%= item.skor !== null ? item.skor + '%' : '-' %>
+                </td>
+                <td class="px-4 py-3">
+                  <input type="text" name="keterangan[]" 
+                    value="<%= item.keterangan || '' %>"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1">
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <button type="submit" class="mt-4 bg-brand-blue text-white font-semibold px-6 py-2 rounded-lg">
+        Simpan Semua
+      </button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Hapus Field - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'Hapus Field' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-md">
+      <p class="text-base font-bold text-gray-800 mb-3">Hapus "<%= field.field_label %>"?</p>
+
+      <% if (jumlahData > 0) { %>
+        <div class="bg-amber-50 border border-amber-200 text-amber-700 text-sm px-4 py-3 rounded-lg mb-5">
+          Ada <strong><%= jumlahData %></strong> data pegawai yang sudah mengisi field ini. Kalau dihapus, semua data itu akan ikut terhapus permanen dan tidak bisa dikembalikan.
+        </div>
+      <% } else { %>
+        <div class="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-5">
+          Belum ada data pegawai yang mengisi field ini — aman untuk dihapus.
+        </div>
+      <% } %>
+
+      <div class="flex gap-3">
+        <a href="/pegawai/custom-fields" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</a>
+        <form action="/pegawai/custom-fields/hapus/<%= field.id %>" method="POST" class="flex-1">
+          <button type="submit" class="w-full bg-red-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-red-700">Ya, Hapus</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

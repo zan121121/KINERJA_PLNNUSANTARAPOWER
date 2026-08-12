@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>KPI Jml Hari Orang Pengembangan - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'KPI Jml Hari Orang Pengembangan' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex justify-between items-start flex-wrap gap-4">
+        <div>
+          <p class="text-lg font-bold text-gray-800">KPI Jml Hari Orang Pengembangan</p>
+          <p class="text-gray-400 text-sm mt-0.5">Total hari pelatihan yang diikuti pegawai (target minimal 8 hari/tahun)</p>
+        </div>
+        <form method="GET" class="flex items-end gap-2">
+          <select name="bulan" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].forEach((nm, i) => { %>
+              <option value="<%= i+1 %>" <%= (i+1) === bulan ? 'selected' : '' %>><%= nm %></option>
+            <% }) %>
+          </select>
+          <input type="number" name="tahun" value="<%= tahun %>" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 w-24 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+          <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700">Tampilkan</button>
+        </form>
+      </div>
+
+      <div class="mt-5 pt-5 border-t border-gray-100">
+        <p class="text-xs text-gray-400">Total Hari Bulan Ini</p>
+        <p class="text-xl font-bold text-gray-800 mt-0.5"><%= totalHariBulanIni %> hari</p>
+      </div>
+    </div>
+
+    <!-- Grafik Tren Bulanan -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <p class="font-bold text-gray-800 text-sm mb-4">Tren Bulanan — Tahun <%= tahun %></p>
+      <canvas id="chartTren" height="80"></canvas>
+    </div>
+
+    <!-- Cek target 8 hari per pegawai -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <p class="font-bold text-gray-800 text-sm mb-4">Progress Target 8 Hari/Tahun per Pegawai</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <% totalPerPegawai.forEach(p => { %>
+          <% const persen = Math.min((p.total_hari / 8) * 100, 100); %>
+          <div class="border border-gray-100 rounded-lg p-3">
+            <div class="flex justify-between text-sm mb-1.5">
+              <span class="font-medium text-gray-700 truncate"><%= p.nama %></span>
+              <span class="text-gray-400"><%= p.total_hari %>/8 hari</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2">
+              <div class="h-2 rounded-full <%= persen >= 100 ? 'bg-green-500' : persen >= 50 ? 'bg-yellow-500' : 'bg-red-500' %>"
+                   style="width: <%= persen %>%"></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center mb-4">
+      <p class="font-bold text-gray-800 text-sm">Daftar Pelatihan Bulan Ini</p>
+      <% if (user.role === 'admin' || user.role === 'input') { %>
+        <a href="/hcr-hari-pengembangan/tambah?bulan=<%= bulan %>&tahun=<%= tahun %>" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Tambah Pelatihan
+        </a>
+      <% } %>
+    </div>
+
+    <% if (successMsg && successMsg.length > 0) { %>
+      <div class="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"><%= successMsg %></div>
+    <% } %>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-5 py-3 font-semibold">Nama Pegawai</th>
+            <th class="px-5 py-3 font-semibold">Nama Pelatihan</th>
+            <th class="px-5 py-3 font-semibold">Tanggal</th>
+            <th class="px-5 py-3 font-semibold">Jml Hari</th>
+            <th class="px-5 py-3 font-semibold text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% dataPelatihan.forEach(d => { %>
+            <tr class="hover:bg-gray-50 transition">
+              <td class="px-5 py-3.5 font-medium text-gray-800"><%= d.nama %></td>
+              <td class="px-5 py-3.5 text-gray-600"><%= d.nama_pelatihan %></td>
+              <td class="px-5 py-3.5 text-gray-600"><%= d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID') : '-' %></td>
+              <td class="px-5 py-3.5 text-gray-600"><%= d.jumlah_hari %> hari</td>
+              <td class="px-5 py-3.5 text-right space-x-3">
+                <% if (user.role === 'admin' || user.role === 'input') { %>
+                  <a href="/hcr-hari-pengembangan/edit/<%= d.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a>
+                <% } %>
+                <% if (user.role === 'admin') { %>
+                  <form action="/hcr-hari-pengembangan/hapus/<%= d.id %>" method="POST" class="inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                    <button class="text-red-600 hover:underline text-sm font-medium">Hapus</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+          <% if (dataPelatihan.length === 0) { %>
+            <tr><td colspan="5" class="px-5 py-10 text-center text-gray-400">Belum ada data untuk periode ini</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script>
+    const ctx = document.getElementById('chartTren').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+        datasets: [{
+          label: 'Total Hari Pelatihan',
+          data: <%- JSON.stringify(dataTren) %>,
+          backgroundColor: '#00CCFF',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, title: { display: true, text: 'Hari' } } }
+      }
+    });
+  </script>
+</body>
+</html>

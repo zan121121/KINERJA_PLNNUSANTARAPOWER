@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Input HCR - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../partials/sidebar') %>
+  <%- include('../partials/topbar', { pageTitle: 'Input & Monitoring HCR' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <p class="text-sm text-gray-400 mb-6">Pilih salah satu item HCR untuk mulai input data</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <% 
+        const pathIkon = [
+          'M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m-6 0H5a1 1 0 01-1-1V9a1 1 0 01.4-.8l7-5.25a1 1 0 011.2 0l7 5.25a1 1 0 01.4.8v9a1 1 0 01-1 1h-4',
+          'M13 10V3L4 14h7v7l9-11h-7z',
+          'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+          'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+          'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+          'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+          'M12 15a3 3 0 100-6 3 3 0 000 6z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
+          'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+        ];
+        const warnaIkon = ['bg-blue-50 text-blue-600','bg-purple-50 text-purple-600','bg-amber-50 text-amber-600','bg-rose-50 text-rose-600','bg-emerald-50 text-emerald-600','bg-indigo-50 text-indigo-600','bg-cyan-50 text-cyan-600','bg-orange-50 text-orange-600'];
+      %>
+      <% daftarItem.forEach((item, i) => { %>
+        <% if (item.aktif) { %>
+          <a href="<%= item.url %>" class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-brand-blue transition p-5">
+            <div class="w-11 h-11 rounded-lg <%= warnaIkon[i] %> flex items-center justify-center mb-3">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="<%= pathIkon[i] %>" />
+              </svg>
+            </div>
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 <%= item.tipe === 'MLI' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-600' %>">
+              <%= item.tipe %>
+            </span>
+            <p class="font-semibold text-gray-800 text-sm leading-snug"><%= i + 1 %>. <%= item.nama %></p>
+          </a>
+        <% } else { %>
+          <div class="bg-gray-50 rounded-xl border border-gray-100 p-5 opacity-60 cursor-not-allowed">
+            <div class="w-11 h-11 rounded-lg bg-gray-200 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="<%= pathIkon[i] %>" />
+              </svg>
+            </div>
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 bg-gray-200 text-gray-500">
+              <%= item.tipe %>
+            </span>
+            <p class="font-semibold text-gray-400 text-sm leading-snug"><%= i + 1 %>. <%= item.nama %></p>
+            <p class="text-xs text-gray-400 mt-1">Segera hadir</p>
+          </div>
+        <% } %>
+      <% }) %>
+    </div>
+  </main>
+</body>
+</html>

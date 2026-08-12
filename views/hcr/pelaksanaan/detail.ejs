@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Detail Kegiatan - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'Detail Pelaksanaan PPK' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <a href="/hcr-pelaksanaan" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-blue mb-4">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      Kembali
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex justify-between items-start flex-wrap gap-4">
+        <div>
+          <p class="text-lg font-bold text-gray-800"><%= data.nama_kegiatan %></p>
+          <p class="text-gray-400 text-sm mt-0.5"><%= data.nama %> · <%= data.nip %></p>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-xs font-semibold 
+          <%= data.status === 'Selesai' ? 'bg-green-50 text-green-700' : data.status === 'Terlambat' ? 'bg-red-50 text-red-700' : data.status === 'Berlangsung' ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500' %>">
+          <%= data.status %>
+        </span>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-100 flex gap-8 text-sm">
+        <div>
+          <p class="text-xs text-gray-400">Jadwal</p>
+          <p class="font-medium text-gray-700 mt-0.5"><%= data.jadwal_tanggal ? new Date(data.jadwal_tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' %></p>
+        </div>
+        <a href="/hcr-pelaksanaan/edit/<%= data.id %>" class="text-blue-600 hover:underline text-sm font-medium self-end">Edit Info Kegiatan</a>
+      </div>
+    </div>
+
+    <% if (successMsg && successMsg.length > 0) { %>
+      <div class="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"><%= successMsg %></div>
+    <% } %>
+    <% if (errorMsg && errorMsg.length > 0) { %>
+      <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"><%= errorMsg %></div>
+    <% } %>
+
+    <!-- Form tambah log -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <p class="font-bold text-gray-800 text-sm mb-4">Tambah Catatan Log Aktivitas</p>
+      <form action="/hcr-pelaksanaan/detail/<%= data.id %>/log" method="POST" class="flex gap-3 items-end flex-wrap">
+        <div class="w-40">
+          <label class="block text-xs font-medium text-gray-500 mb-1.5">Tanggal</label>
+          <input type="date" name="tanggal_log" required value="<%= new Date().toISOString().split('T')[0] %>"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div class="flex-1 min-w-[240px]">
+          <label class="block text-xs font-medium text-gray-500 mb-1.5">Catatan</label>
+          <input type="text" name="catatan" required placeholder="Contoh: Peserta sudah menyelesaikan modul 1"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90">
+          Tambah
+        </button>
+      </form>
+    </div>
+
+    <!-- Timeline log -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <p class="font-bold text-gray-800 text-sm mb-5">Riwayat Log Aktivitas</p>
+
+      <% if (logs.length === 0) { %>
+        <p class="text-gray-400 text-sm text-center py-6">Belum ada catatan log</p>
+      <% } else { %>
+        <div class="space-y-0">
+          <% logs.forEach((log, i) => { %>
+            <div class="flex gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-2.5 h-2.5 rounded-full bg-brand-blue mt-1.5 shrink-0"></div>
+                <% if (i < logs.length - 1) { %>
+                  <div class="w-px flex-1 bg-gray-200 my-1"></div>
+                <% } %>
+              </div>
+              <div class="pb-5 flex-1">
+                <div class="flex justify-between items-start gap-3">
+                  <div>
+                    <p class="text-xs text-gray-400 font-medium">
+                      <%= new Date(log.tanggal_log).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                    </p>
+                    <p class="text-sm text-gray-700 mt-1"><%= log.catatan %></p>
+                  </div>
+                  <form action="/hcr-pelaksanaan/log/hapus/<%= log.id %>" method="POST" onsubmit="return confirm('Hapus catatan ini?')">
+                    <button class="text-gray-300 hover:text-red-500 text-xs">Hapus</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>
