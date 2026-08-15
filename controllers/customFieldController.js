@@ -97,7 +97,7 @@ exports.showHapusConfirm = async (req, res) => {
 };
 
 exports.hapus = async (req, res) => {
-  await db.query('DELETE FROM pegawai_custom_fields WHERE id = ?', [req.params.id]);
+  await db.query('DELETE FROM pegawai_c4ustom_fields WHERE id = ?', [req.params.id]);
   req.flash('success', 'Field berhasil dihapus');
   res.redirect('/pegawai/custom-fields');
 };

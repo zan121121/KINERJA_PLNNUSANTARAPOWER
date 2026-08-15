@@ -48,7 +48,7 @@ exports.tambah = async (req, res) => {
     await sinkronSkorHcr(bulan, tahun);
 
     req.flash('success', 'Aksi berhasil ditambahkan');
-    res.redirect(`/hcr-aksi?bulan=${bulan}&tahun=${tahun}`);
+    res.redirect(req.body.kembali || `/hcr-aksi?bulan=${bulan}&tahun=${tahun}`);
   } catch (err) {
     console.error('ERROR TAMBAH AKSI:', err);
     req.flash('error', 'Gagal menambahkan aksi');
@@ -110,7 +110,7 @@ exports.hapus = async (req, res) => {
     await sinkronSkorHcr(existing[0].periode_bulan, existing[0].periode_tahun);
   }
   req.flash('success', 'Aksi berhasil dihapus');
-  res.redirect('/hcr-aksi');
+  res.redirect(req.body.kembali || '/hcr-aksi');
 };
 
 // Sinkron ke hcr_realisasi: skornya = % aksi berstatus "Selesai" dari total aksi periode itu

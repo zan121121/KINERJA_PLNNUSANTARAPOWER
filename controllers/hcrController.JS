@@ -95,3 +95,42 @@ exports.simpanInput = async (req, res) => {
     res.redirect(`/hcr-realisasi/input/${pegawaiId}`);
   }
 };
+
+// Skor HCR gabungan (berbobot) per pegawai, untuk 1 periode
+exports.skorGabunganJson = async (req, res) => {
+  const bulan = parseInt(req.query.bulan) || new Date().getMonth() + 1;
+  const tahun = parseInt(req.query.tahun) || new Date().getFullYear();
+
+  const [bobotRows] = await db.query('SELECT hcr_item_id, bobot_persen FROM hcr_bobot');
+  const bobotMap = {};
+  bobotRows.forEach(b => { bobotMap[b.hcr_item_id] = parseFloat(b.bobot_persen); });
+
+  const [pegawai] = await db.query('SELECT id, nama FROM pegawai ORDER BY nama ASC');
+  const [realisasi] = await db.query(
+    'SELECT pegawai_id, hcr_item_id, skor FROM hcr_realisasi WHERE periode_bulan = ? AND periode_tahun = ?',
+    [bulan, tahun]
+  );
+
+  const skorMap = {};
+  realisasi.forEach(r => {
+    if (!skorMap[r.pegawai_id]) skorMap[r.pegawai_id] = {};
+    skorMap[r.pegawai_id][r.hcr_item_id] = parseFloat(r.skor);
+  });
+
+  const hasil = pegawai.map(p => {
+    const skorItem = skorMap[p.id] || {};
+    let totalSkor = 0;
+    Object.keys(bobotMap).forEach(itemId => {
+      const skor = skorItem[itemId] !== undefined ? skorItem[itemId] : 0;
+      totalSkor += (skor * bobotMap[itemId] / 100);
+    });
+
+    let kategori = 'Rendah';
+    if (totalSkor >= 85) kategori = 'Tinggi';
+    else if (totalSkor >= 60) kategori = 'Sedang';
+
+    return { id: p.id, nama: p.nama, skorGabungan: totalSkor.toFixed(1), kategori };
+  });
+
+  res.json({ bulan, tahun, data: hasil });
+};

@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const pegawaiRoutes = require('./routes/pegawaiRoutes');
 const hcrRoutes = require('./routes/hcrRoutes');
+const hcrDashboardRoutes = require('./routes/hcrDashboardRoutes');
 const customFieldRoutes = require('./routes/customFieldRoutes');
 const hcrAssesmenRoutes = require('./routes/hcrAssesmenRoutes');
 const hcrIdentifikasiRoutes = require('./routes/hcrIdentifikasiRoutes');
@@ -18,6 +19,7 @@ const hcrAksiRoutes = require('./routes/hcrAksiRoutes');
 const hcrPenugasanRoutes = require('./routes/hcrPenugasanRoutes');
 const hcrSertifikasiRoutes = require('./routes/hcrSertifikasiRoutes');
 const hcrHariPengembanganRoutes = require('./routes/hcrHariPengembanganRoutes');
+const hcrBobotRoutes = require('./routes/hcrBobotRoutes');
 
 
 const app = express();
@@ -64,6 +66,7 @@ app.use('/', authRoutes);
 app.use('/', userRoutes);
 app.use('/', pegawaiRoutes);
 app.use('/', hcrRoutes);
+app.use('/', hcrDashboardRoutes);
 app.use('/', customFieldRoutes);
 app.use('/', hcrAssesmenRoutes);
 app.use('/', hcrIdentifikasiRoutes);
@@ -73,6 +76,7 @@ app.use('/', hcrAksiRoutes);
 app.use('/', hcrPenugasanRoutes);
 app.use('/', hcrSertifikasiRoutes);
 app.use('/', hcrHariPengembanganRoutes);
+app.use('/', hcrBobotRoutes);
 
 
 app.get('/', (req, res) => {

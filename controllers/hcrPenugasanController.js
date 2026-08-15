@@ -58,7 +58,7 @@ exports.tambah = async (req, res) => {
     await sinkronSkorHcr(bulan, tahun);
 
     req.flash('success', 'Data penugasan berhasil disimpan');
-    res.redirect(`/hcr-penugasan?bulan=${bulan}&tahun=${tahun}`);
+    res.redirect(req.body.kembali || `/hcr-penugasan?bulan=${bulan}&tahun=${tahun}`);
   } catch (err) {
     console.error('ERROR TAMBAH PENUGASAN:', err);
     req.flash('error', 'Gagal menyimpan data penugasan');
@@ -116,7 +116,7 @@ exports.hapus = async (req, res) => {
     await sinkronSkorHcr(existing[0].periode_bulan, existing[0].periode_tahun);
   }
   req.flash('success', 'Data berhasil dihapus');
-  res.redirect('/hcr-penugasan');
+  res.redirect(req.body.kembali || '/hcr-penugasan');
 };
 
 // Sinkron ke hcr_realisasi: skornya = rata-rata % realisasi/target semua penugasan di periode itu

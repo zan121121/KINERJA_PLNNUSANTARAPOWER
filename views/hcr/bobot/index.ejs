@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Atur Bobot HCR - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'Atur Bobot Skor HCR' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <a href="/hcr-menu" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-blue mb-4">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      Kembali ke Menu HCR
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl">
+      <p class="text-base font-bold text-gray-800 mb-1">Atur Bobot Skor HCR</p>
+      <p class="text-sm text-gray-400 mb-5">Tentukan persentase kontribusi tiap item terhadap skor HCR keseluruhan. Total harus 100%.</p>
+
+      <% if (successMsg && successMsg.length > 0) { %>
+        <div class="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"><%= successMsg %></div>
+      <% } %>
+      <% if (errorMsg && errorMsg.length > 0) { %>
+        <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"><%= errorMsg %></div>
+      <% } %>
+
+      <form action="/hcr-bobot" method="POST" class="space-y-3">
+        <% rows.forEach(r => { %>
+          <div class="flex items-center justify-between gap-4 py-2 border-b border-gray-50">
+            <div>
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold mb-1 <%= r.tipe === 'MLI' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-600' %>">
+                <%= r.tipe %>
+              </span>
+              <p class="text-sm text-gray-700"><%= r.nama_item %></p>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <input type="number" step="0.1" min="0" max="100" name="bobot[<%= r.item_id %>]" value="<%= r.bobot_persen %>"
+                class="bobot-input w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand-blue">
+              <span class="text-sm text-gray-400">%</span>
+            </div>
+          </div>
+        <% }) %>
+
+        <div class="flex justify-between items-center pt-3">
+          <p class="text-sm font-semibold text-gray-600">Total Bobot</p>
+          <p id="total-bobot" class="text-lg font-bold text-gray-800">100.0%</p>
+        </div>
+        <p id="peringatan-bobot" class="hidden text-xs text-red-600">Total bobot harus tepat 100% sebelum disimpan</p>
+
+        <button type="submit" class="w-full bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90 mt-2">
+          Simpan Bobot
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const inputs = document.querySelectorAll('.bobot-input');
+    const totalEl = document.getElementById('total-bobot');
+    const peringatanEl = document.getElementById('peringatan-bobot');
+
+    function hitungTotal() {
+      let total = 0;
+      inputs.forEach(inp => { total += parseFloat(inp.value) || 0; });
+      totalEl.textContent = total.toFixed(1) + '%';
+      const beda = Math.abs(total - 100);
+      if (beda > 0.1) {
+        totalEl.classList.add('text-red-600');
+        totalEl.classList.remove('text-gray-800');
+        peringatanEl.classList.remove('hidden');
+      } else {
+        totalEl.classList.remove('text-red-600');
+        totalEl.classList.add('text-gray-800');
+        peringatanEl.classList.add('hidden');
+      }
+    }
+
+    inputs.forEach(inp => inp.addEventListener('input', hitungTotal));
+    hitungTotal();
+  </script>
+</body>
+</html>

@@ -61,7 +61,7 @@ exports.tambah = async (req, res) => {
     await sinkronSkorHcr(bulan, tahun);
 
     req.flash('success', 'Data sertifikasi berhasil disimpan');
-    res.redirect(`/hcr-sertifikasi?bulan=${bulan}&tahun=${tahun}`);
+    res.redirect(req.body.kembali || `/hcr-sertifikasi?bulan=${bulan}&tahun=${tahun}`);
   } catch (err) {
     console.error('ERROR TAMBAH SERTIFIKASI:', err);
     req.flash('error', 'Gagal menyimpan data sertifikasi');
@@ -119,7 +119,7 @@ exports.hapus = async (req, res) => {
     await sinkronSkorHcr(existing[0].periode_bulan, existing[0].periode_tahun);
   }
   req.flash('success', 'Data berhasil dihapus');
-  res.redirect('/hcr-sertifikasi');
+  res.redirect(req.body.kembali || '/hcr-sertifikasi');
 };
 
 // Sinkron ke hcr_realisasi: skornya = % pegawai unik yang punya sertifikasi di periode itu

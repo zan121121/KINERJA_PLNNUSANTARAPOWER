@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Terpadu HCR - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../partials/sidebar') %>
+  <%- include('../partials/topbar', { pageTitle: 'Dashboard Terpadu HCR' }) %>
+
+  <% const namaBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+     const bisaInput = (user.role === 'admin' || user.role === 'input');
+     const bisaHapus = (user.role === 'admin');
+     const kembaliDasar = `/hcr-dashboard?bulan=${bulan}&tahun=${tahun}`;
+  %>
+
+  <main class="ml-64 pt-16 p-6">
+
+    <!-- ===== Filter periode ===== -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex justify-between items-start flex-wrap gap-4">
+        <div>
+          <p class="text-lg font-bold text-gray-800">Dashboard Terpadu HCR</p>
+          <p class="text-gray-400 text-sm mt-0.5">Semua data & fungsi 8 item HCR (MLI &amp; KPI) dalam satu halaman</p>
+        </div>
+        <form method="GET" action="/hcr-dashboard" id="form-filter" class="flex items-end gap-2">
+          <input type="hidden" name="tab" id="filter-tab-input" value="">
+          <select name="bulan" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% namaBulan.forEach((nm, i) => { %>
+              <option value="<%= i+1 %>" <%= (i+1) === bulan ? 'selected' : '' %>><%= nm %></option>
+            <% }) %>
+          </select>
+          <input type="number" name="tahun" value="<%= tahun %>" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 w-24 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+          <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700">Tampilkan</button>
+        </form>
+      </div>
+
+      <!-- Skor gabungan keseluruhan -->
+      <div class="mt-5 pt-5 border-t border-gray-100">
+        <div class="flex justify-between text-sm mb-1.5">
+          <span class="text-gray-500">Skor Gabungan HCR (rata-rata 8 item) — <%= namaBulan[bulan-1] %> <%= tahun %></span>
+          <span class="font-bold text-gray-800"><%= skorKeseluruhan %>%</span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-3">
+          <div class="h-3 rounded-full <%= skorKeseluruhan >= 90 ? 'bg-green-500' : skorKeseluruhan >= 70 ? 'bg-yellow-500' : 'bg-red-500' %>"
+               style="width: <%= skorKeseluruhan %>%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Flash messages ===== -->
+    <% if (successMsg && successMsg.length > 0) { %>
+      <div class="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"><%= successMsg %></div>
+    <% } %>
+    <% if (errorMsg && errorMsg.length > 0) { %>
+      <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"><%= errorMsg %></div>
+    <% } %>
+
+    <!-- ===== 8 kartu ringkasan / pemicu tab ===== -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <%
+        const kartu = [
+          { tab: 'assesmen', tipe: 'MLI', nama: '1. MLI Assesmen Kompetensi', kode: 'MLI_ASSESMEN', warna: 'bg-blue-50 text-blue-600', path: 'M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m-6 0H5a1 1 0 01-1-1V9a1 1 0 01.4-.8l7-5.25a1 1 0 011.2 0l7 5.25a1 1 0 01.4.8v9a1 1 0 01-1 1h-4' },
+          { tab: 'identifikasi', tipe: 'MLI', nama: '2. MLI Identifikasi PPK', kode: 'MLI_IDENT_PPK', warna: 'bg-purple-50 text-purple-600', path: 'M13 10V3L4 14h7v7l9-11h-7z' },
+          { tab: 'pelaksanaan', tipe: 'MLI', nama: '3. MLI Pelaksanaan & Monitoring PPK', kode: 'MLI_PELAKSANAAN_PPK', warna: 'bg-amber-50 text-amber-600', path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+          { tab: 'evaluasi', tipe: 'MLI', nama: '4. MLI Evaluasi PPK', kode: 'MLI_EVALUASI_PPK', warna: 'bg-rose-50 text-rose-600', path: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
+          { tab: 'aksi', tipe: 'MLI', nama: '5. MLI AKSI', kode: 'MLI_AKSI', warna: 'bg-emerald-50 text-emerald-600', path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+          { tab: 'penugasan', tipe: 'KPI', nama: '6. KPI Penugasan', kode: 'KPI_PENUGASAN', warna: 'bg-indigo-50 text-indigo-600', path: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+          { tab: 'sertifikasi', tipe: 'KPI', nama: '7. KPI Sertifikasi Kompetensi', kode: 'KPI_SERTIFIKASI', warna: 'bg-cyan-50 text-cyan-600', path: 'M12 15a3 3 0 100-6 3 3 0 000 6z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' },
+          { tab: 'hari', tipe: 'KPI', nama: '8. KPI Jml Hari Orang Pengembangan', kode: 'KPI_HARI_ORANG', warna: 'bg-orange-50 text-orange-600', path: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+        ];
+      %>
+      <% kartu.forEach(k => { const skor = (skorPerKode[k.kode] || 0).toFixed(1); %>
+        <button type="button" onclick="showTab('<%= k.tab %>')" data-tabbtn="<%= k.tab %>"
+          class="tab-card text-left bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-brand-blue transition p-5">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-lg <%= k.warna %> flex items-center justify-center mb-3">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="<%= k.path %>" />
+              </svg>
+            </div>
+            <span class="text-sm font-bold text-gray-700"><%= skor %>%</span>
+          </div>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 <%= k.tipe === 'MLI' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-600' %>">
+            <%= k.tipe %>
+          </span>
+          <p class="font-semibold text-gray-800 text-sm leading-snug"><%= k.nama %></p>
+          <div class="w-full bg-gray-100 rounded-full h-1.5 mt-3">
+            <div class="h-1.5 rounded-full <%= skor >= 90 ? 'bg-green-500' : skor >= 70 ? 'bg-yellow-500' : 'bg-red-500' %>" style="width: <%= skor %>%"></div>
+          </div>
+        </button>
+      <% }) %>
+    </div>
+
+    <!-- ===== Panel isi tiap modul ===== -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+
+      <!-- ======================================================= -->
+      <!-- 1. MLI ASSESMEN KOMPETENSI -->
+      <!-- ======================================================= -->
+      <section id="tab-panel-assesmen" class="tab-panel p-6">
+        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+          <div>
+            <p class="font-bold text-gray-800">MLI Assesmen Kompetensi</p>
+            <p class="text-sm text-gray-400">Progress: <%= jumlahSelesaiAssesmen %> dari <%= totalPegawai %> pegawai (<%= persentaseAssesmen %>%)</p>
+          </div>
+          <% if (bisaInput) { %>
+            <button type="button" onclick="openModal('modal-assesmen')" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Tambah Data Assesmen
+            </button>
+          <% } %>
+        </div>
+        <div class="overflow-x-auto border border-gray-100 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Nama Pegawai</th>
+                <th class="px-4 py-3 font-semibold">Jenis Assesmen</th>
+                <th class="px-4 py-3 font-semibold">Tanggal</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold">Skor</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% dataAssesmen.forEach(d => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-800"><%= d.nama %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.jenis_assesmen %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.tanggal_assesmen ? new Date(d.tanggal_assesmen).toLocaleDateString('id-ID') : '-' %></td>
+                  <td class="px-4 py-3">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <%= d.status === 'Selesai' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500' %>"><%= d.status %></span>
+                  </td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.skor !== null ? d.skor : '-' %></td>
+                  <td class="px-4 py-3 text-right space-x-3">
+                    <% if (bisaInput) { %><a href="/hcr-assesmen/edit/<%= d.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a><% } %>
+                    <% if (bisaHapus) { %>
+                      <form action="/hcr-assesmen/hapus/<%= d.id %>" method="POST" class="inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=assesmen">
+                        <button class="text-red-600 hover:underline text-sm font-medium">Hapus</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (dataAssesmen.length === 0) { %>
+                <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">Belum ada data assesmen untuk periode ini</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 2. MLI IDENTIFIKASI PPK -->
+      <!-- ======================================================= -->
+      <section id="tab-panel-identifikasi" class="tab-panel p-6 hidden">
+        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+          <div>
+            <p class="font-bold text-gray-800">MLI Identifikasi PPK</p>
+            <p class="text-sm text-gray-400">Teridentifikasi: <%= dataIdentifikasi.length %> dari <%= totalPegawai %> pegawai (<%= persentaseIdentifikasi %>%) &middot; Disetujui: <%= jumlahDisetujuiIdentifikasi %></p>
+          </div>
+          <% if (bisaInput) { %>
+            <button type="button" onclick="openModal('modal-identifikasi')" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Tambah Identifikasi
+            </button>
+          <% } %>
+        </div>
+        <div class="overflow-x-auto border border-gray-100 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Nama Pegawai</th>
+                <th class="px-4 py-3 font-semibold">Kompetensi Dikembangkan</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% dataIdentifikasi.forEach(d => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-800"><%= d.nama %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.kompetensi_dikembangkan %></td>
+                  <td class="px-4 py-3">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <%= d.status === 'Disetujui' ? 'bg-green-50 text-green-700' : d.status === 'Ditolak' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500' %>"><%= d.status %></span>
+                  </td>
+                  <td class="px-4 py-3 text-right space-x-3">
+                    <% if (bisaInput) { %><a href="/hcr-identifikasi/edit/<%= d.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a><% } %>
+                    <% if (bisaHapus) { %>
+                      <form action="/hcr-identifikasi/hapus/<%= d.id %>" method="POST" class="inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=identifikasi">
+                        <button class="text-red-600 hover:underline text-sm font-medium">Hapus</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (dataIdentifikasi.length === 0) { %>
+                <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Belum ada data identifikasi untuk periode ini</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 3. MLI PELAKSANAAN & MONITORING PPK -->
+      <!-- ======================================================= -->
+      <section id="tab-panel-pelaksanaan" class="tab-panel p-6 hidden">
+        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+          <div>
+            <p class="font-bold text-gray-800">MLI Pelaksanaan & Monitoring PPK</p>
+            <p class="text-sm text-gray-400">Selesai: <%= jumlahSelesaiPelaksanaan %> &middot; Terlambat: <%= jumlahTerlambatPelaksanaan %> &middot; Progress: <%= persentasePelaksanaan %>%</p>
+          </div>
+          <% if (bisaInput) { %>
+            <button type="button" onclick="openModal('modal-pelaksanaan')" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Tambah Kegiatan
+            </button>
+          <% } %>
+        </div>
+        <div class="overflow-x-auto border border-gray-100 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Nama Pegawai</th>
+                <th class="px-4 py-3 font-semibold">Kegiatan</th>
+                <th class="px-4 py-3 font-semibold">Jadwal</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% dataPelaksanaan.forEach(d => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-800"><%= d.nama %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.nama_kegiatan %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.jadwal_tanggal ? new Date(d.jadwal_tanggal).toLocaleDateString('id-ID') : '-' %></td>
+                  <td class="px-4 py-3">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <%= d.status === 'Selesai' ? 'bg-green-50 text-green-700' : d.status === 'Terlambat' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500' %>"><%= d.status %></span>
+                  </td>
+                  <td class="px-4 py-3 text-right space-x-3">
+                    <a href="/hcr-pelaksanaan/detail/<%= d.id %>" class="text-gray-600 hover:underline text-sm font-medium">Detail</a>
+                    <% if (bisaInput) { %><a href="/hcr-pelaksanaan/edit/<%= d.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a><% } %>
+                    <% if (bisaHapus) { %>
+                      <form action="/hcr-pelaksanaan/hapus/<%= d.id %>" method="POST" class="inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=pelaksanaan">
+                        <button class="text-red-600 hover:underline text-sm font-medium">Hapus</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (dataPelaksanaan.length === 0) { %>
+                <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Belum ada data pelaksanaan untuk periode ini</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 4. MLI EVALUASI PPK -->
+      <!-- ======================================================= -->
+      <section id="tab-panel-evaluasi" class="tab-panel p-6 hidden">
+        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+          <div>
+            <p class="font-bold text-gray-800">MLI Evaluasi PPK</p>
+            <p class="text-sm text-gray-400">Rata-rata skor evaluasi: <%= rataSkorEvaluasi %></p>
+          </div>
+          <% if (bisaInput) { %>
+            <button type="button" onclick="openModal('modal-evaluasi')" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Tambah Evaluasi
+            </button>
+          <% } %>
+        </div>
+        <div class="overflow-x-auto border border-gray-100 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Nama Pegawai</th>
+                <th class="px-4 py-3 font-semibold">Program</th>
+                <th class="px-4 py-3 font-semibold">Skor</th>
+                <th class="px-4 py-3 font-semibold">Bukti</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% dataEvaluasi.forEach(d => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-800"><%= d.nama %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.nama_program %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.skor_evaluasi %></td>
+                  <td class="px-4 py-3">
+                    <% if (d.file_bukti) { %>
+                      <a href="/uploads/evaluasi-ppk/<%= d.file_bukti %>" target="_blank" class="text-blue-600 hover:underline text-xs font-medium">Lihat File</a>
+                    <% } else { %><span class="text-gray-400 text-xs">-</span><% } %>
+                  </td>
+                  <td class="px-4 py-3 text-right space-x-3">
+                    <% if (bisaInput) { %><a href="/hcr-evaluasi/edit/<%= d.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a><% } %>
+                    <% if (bisaHapus) { %>
+                      <form action="/hcr-evaluasi/hapus/<%= d.id %>" method="POST" class="inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=evaluasi">
+                        <button class="text-red-600 hover:underline text-sm font-medium">Hapus</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (dataEvaluasi.length === 0) { %>
+                <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Belum ada data evaluasi untuk periode ini</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 5. MLI AKSI (Kanban) -->
+      <!-- ======================================================= -->
+      <section id="tab-panel-aksi" class="tab-panel p-6 hidden">
+        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+          <div>
+            <p class="font-bold text-gray-800">MLI AKSI</p>
+            <p class="text-sm text-gray-400">Total aksi: <%= totalAksi %> &middot; Selesai: <%= persentaseAksi %>%</p>
+          </div>
+          <% if (bisaInput) { %>
+            <button type="button" onclick="openModal('modal-aksi')" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Tambah Aksi
+            </button>
+          <% } %>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-gray-50 rounded-xl border border-gray-200 p-3">
+            <h3 class="font-bold text-gray-600 text-xs uppercase tracking-wider mb-3 px-2 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span> Belum (<%= kolomBelum.length %>)
+            </h3>
+            <div class="space-y-2">
+              <% kolomBelum.forEach(a => { %>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-3">
+                  <p class="font-semibold text-sm text-gray-800"><%= a.nama_aksi %></p>
+                  <p class="text-xs text-gray-500 mt-1">PIC: <%= a.nama_pic || '-' %></p>
+                  <p class="text-xs text-gray-400"><%= a.target_selesai ? 'Target: ' + new Date(a.target_selesai).toLocaleDateString('id-ID') : '' %></p>
+                  <div class="flex justify-between items-center mt-2.5 pt-2.5 border-t border-gray-50">
+                    <% if (bisaInput) { %><a href="/hcr-aksi/edit/<%= a.id %>" class="text-xs text-blue-600 hover:underline font-medium">Edit</a><% } else { %><span></span><% } %>
+                    <% if (bisaInput) { %><button onclick="ubahStatusAksi(<%= a.id %>, 'Proses')" class="text-xs bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-full font-semibold hover:bg-yellow-100">&rarr; Proses</button><% } %>
+                  </div>
+                </div>
+              <% }) %>
+              <% if (kolomBelum.length === 0) { %><p class="text-center text-xs text-gray-400 py-6">Tidak ada aksi</p><% } %>
+            </div>
+          </div>
+          <div class="bg-gray-50 rounded-xl border border-gray-200 p-3">
+            <h3 class="font-bold text-gray-600 text-xs uppercase tracking-wider mb-3 px-2 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-yellow-500"></span> Proses (<%= kolomProses.length %>)
+            </h3>
+            <div class="space-y-2">
+              <% kolomProses.forEach(a => { %>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-3">
+                  <p class="font-semibold text-sm text-gray-800"><%= a.nama_aksi %></p>
+                  <p class="text-xs text-gray-500 mt-1">PIC: <%= a.nama_pic || '-' %></p>
+                  <p class="text-xs text-gray-400"><%= a.target_selesai ? 'Target: ' + new Date(a.target_selesai).toLocaleDateString('id-ID') : '' %></p>
+                  <div class="flex justify-between items-center mt-2.5 pt-2.5 border-t border-gray-50">
+                    <% if (bisaInput) { %><a href="/hcr-aksi/edit/<%= a.id %>" class="text-xs text-blue-600 hover:underline font-medium">Edit</a><% } else { %><span></span><% } %>
+                    <% if (bisaInput) { %><button onclick="ubahStatusAksi(<%= a.id %>, 'Selesai')" class="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full font-semibold hover:bg-green-100">&rarr; Selesai</button><% } %>
+                  </div>
+                </div>
+              <% }) %>
+              <% if (kolomProses.length === 0) { %><p class="text-center text-xs text-gray-400 py-6">Tidak ada aksi</p><% } %>
+            </div>
+          </div>
+          <div class="bg-gray-50 rounded-xl border border-gray-200 p-3">
+            <h3 class="font-bold text-gray-600 text-xs uppercase tracking-wider mb-3 px-2 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-green-500"></span> Selesai (<%= kolomSelesai.length %>)
+            </h3>
+            <div class="space-y-2">
+              <% kolomSelesai.forEach(a => { %>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-3 opacity-80">
+                  <p class="font-semibold text-sm text-gray-800 line-through"><%= a.nama_aksi %></p>
+                  <p class="text-xs text-gray-500 mt-1">PIC: <%= a.nama_pic || '-' %></p>
+                  <div class="flex justify-between items-center mt-2.5 pt-2.5 border-t border-gray-50">
+                    <% if (bisaInput) { %><a href="/hcr-aksi/edit/<%= a.id %>" class="text-xs text-blue-600 hover:underline font-medium">Edit</a><% } else { %><span></span><% } %>
+                    <% if (bisaHapus) { %>
+                      <form action="/hcr-aksi/hapus/<%= a.id %>" method="POST" onsubmit="return confirm('Yakin hapus?')">
+                        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=aksi">
+                        <button class="text-xs text-red-600 hover:underline font-medium">Hapus</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </div>
+              <% }) %>
+              <% if (kolomSelesai.length === 0) { %><p class="text-center text-xs text-gray-400 py-6">Tidak ada aksi</p><% } %>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 6. KPI PENUGASAN -->
+      <!-- ======================================================= -->
+      <section id="tab-panel-penugasan" class="tab-panel p-6 hidden">
+        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+          <div>
+            <p class="font-bold text-gray-800">KPI Penugasan</p>
+            <p class="text-sm text-gray-400">Rata-rata capaian: <%= rataPersenPenugasan %>%</p>
+          </div>
+          <% if (bisaInput) { %>
+            <button type="button" onclick="openModal('modal-penugasan')" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Tambah Penugasan
+            </button>
+          <% } %>
+        </div>
+        <div class="overflow-x-auto border border-gray-100 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Nama Pegawai</th>
+                <th class="px-4 py-3 font-semibold">Penugasan</th>
+                <th class="px-4 py-3 font-semibold">Target</th>
+                <th class="px-4 py-3 font-semibold">Realisasi</th>
+                <th class="px-4 py-3 font-semibold">%</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% dataPenugasan.forEach(d => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-800"><%= d.nama %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.nama_penugasan %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.target %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.realisasi %></td>
+                  <td class="px-4 py-3 font-semibold <%= d.persen >= 100 ? 'text-green-600' : 'text-gray-700' %>"><%= d.persen %>%</td>
+                  <td class="px-4 py-3 text-right space-x-3">
+                    <% if (bisaInput) { %><a href="/hcr-penugasan/edit/<%= d.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a><% } %>
+                    <% if (bisaHapus) { %>
+                      <form action="/hcr-penugasan/hapus/<%= d.id %>" method="POST" class="inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=penugasan">
+                        <button class="text-red-600 hover:underline text-sm font-medium">Hapus</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (dataPenugasan.length === 0) { %>
+                <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">Belum ada data penugasan untuk periode ini</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 7. KPI SERTIFIKASI KOMPETENSI -->
+      <!-- ======================================================= -->
+      <section id="tab-panel-sertifikasi" class="tab-panel p-6 hidden">
+        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+          <div>
+            <p class="font-bold text-gray-800">KPI Sertifikasi Kompetensi</p>
+            <p class="text-sm text-gray-400">Tersertifikasi: <%= pegawaiUnikTersertifikasi %> dari <%= totalPegawai %> pegawai (<%= persentaseSertifikasi %>%)</p>
+          </div>
+          <% if (bisaInput) { %>
+            <button type="button" onclick="openModal('modal-sertifikasi')" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Tambah Sertifikasi
+            </button>
+          <% } %>
+        </div>
+        <div class="overflow-x-auto border border-gray-100 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Nama Pegawai</th>
+                <th class="px-4 py-3 font-semibold">Sertifikasi</th>
+                <th class="px-4 py-3 font-semibold">Masa Berlaku</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% dataSertifikasi.forEach(d => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-800"><%= d.nama %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.nama_sertifikasi %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.masa_berlaku ? new Date(d.masa_berlaku).toLocaleDateString('id-ID') : 'Tanpa batas' %></td>
+                  <td class="px-4 py-3">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <%= d.statusMasaBerlaku === 'Aktif' ? 'bg-green-50 text-green-700' : d.statusMasaBerlaku === 'Kadaluarsa' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500' %>"><%= d.statusMasaBerlaku %></span>
+                  </td>
+                  <td class="px-4 py-3 text-right space-x-3">
+                    <% if (bisaInput) { %><a href="/hcr-sertifikasi/edit/<%= d.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a><% } %>
+                    <% if (bisaHapus) { %>
+                      <form action="/hcr-sertifikasi/hapus/<%= d.id %>" method="POST" class="inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=sertifikasi">
+                        <button class="text-red-600 hover:underline text-sm font-medium">Hapus</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (dataSertifikasi.length === 0) { %>
+                <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Belum ada data sertifikasi untuk periode ini</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 8. KPI JML HARI ORANG PENGEMBANGAN -->
+      <!-- ======================================================= -->
+      <section id="tab-panel-hari" class="tab-panel p-6 hidden">
+        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+          <div>
+            <p class="font-bold text-gray-800">KPI Jml Hari Orang Pengembangan</p>
+            <p class="text-sm text-gray-400">Total hari bulan ini: <%= totalHariBulanIni %> hari &middot; Target: 8 hari/pegawai/tahun</p>
+          </div>
+          <% if (bisaInput) { %>
+            <button type="button" onclick="openModal('modal-hari')" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Tambah Pelatihan
+            </button>
+          <% } %>
+        </div>
+
+        <!-- Tren bulanan sederhana -->
+        <div class="border border-gray-100 rounded-lg p-4 mb-5">
+          <p class="text-xs text-gray-400 mb-3">Tren Total Hari Pengembangan &middot; <%= tahun %></p>
+          <% const maxTren = Math.max(1, ...dataTren); %>
+          <div class="flex items-end gap-2 h-28">
+            <% dataTren.forEach((v, i) => { %>
+              <div class="flex-1 flex flex-col items-center justify-end h-full">
+                <div class="w-full bg-brand-blue/80 rounded-t <%= (i+1) === bulan ? 'bg-brand-blue' : 'bg-blue-200' %>" style="height: <%= (v / maxTren) * 100 %>%"></div>
+                <span class="text-[10px] text-gray-400 mt-1"><%= namaBulan[i] %></span>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <p class="font-semibold text-gray-700 text-sm mb-2">Detail Pelatihan &middot; <%= namaBulan[bulan-1] %> <%= tahun %></p>
+        <div class="overflow-x-auto border border-gray-100 rounded-lg mb-5">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Nama Pegawai</th>
+                <th class="px-4 py-3 font-semibold">Pelatihan</th>
+                <th class="px-4 py-3 font-semibold">Tanggal</th>
+                <th class="px-4 py-3 font-semibold">Jumlah Hari</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% dataPelatihan.forEach(d => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-800"><%= d.nama %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.nama_pelatihan %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID') : '-' %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= d.jumlah_hari %></td>
+                  <td class="px-4 py-3 text-right space-x-3">
+                    <% if (bisaInput) { %><a href="/hcr-hari-pengembangan/edit/<%= d.id %>" class="text-blue-600 hover:underline text-sm font-medium">Edit</a><% } %>
+                    <% if (bisaHapus) { %>
+                      <form action="/hcr-hari-pengembangan/hapus/<%= d.id %>" method="POST" class="inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=hari">
+                        <button class="text-red-600 hover:underline text-sm font-medium">Hapus</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (dataPelatihan.length === 0) { %>
+                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">Belum ada data pelatihan untuk periode ini</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="font-semibold text-gray-700 text-sm mb-2">Rekap Total Hari per Pegawai &middot; Tahun <%= tahun %></p>
+        <div class="overflow-x-auto border border-gray-100 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Nama Pegawai</th>
+                <th class="px-4 py-3 font-semibold">Total Hari</th>
+                <th class="px-4 py-3 font-semibold">Target</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% totalPerPegawaiHari.forEach(p => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-800"><%= p.nama %></td>
+                  <td class="px-4 py-3 text-gray-600"><%= p.total_hari %></td>
+                  <td class="px-4 py-3 text-gray-600">8</td>
+                  <td class="px-4 py-3">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <%= p.total_hari >= 8 ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700' %>">
+                      <%= p.total_hari >= 8 ? 'Tercapai' : 'Belum tercapai' %>
+                    </span>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: Tambah Assesmen -->
+  <!-- ============================================================= -->
+  <div id="modal-assesmen" class="modal-overlay hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <p class="font-bold text-gray-800">Tambah Data Assesmen</p>
+        <button type="button" onclick="closeModal('modal-assesmen')" class="text-gray-400 hover:text-gray-600">&#10005;</button>
+      </div>
+      <form action="/hcr-assesmen/tambah" method="POST" class="p-6 space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=assesmen">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Pegawai</label>
+          <select name="pegawai_id" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% pegawai.forEach(p => { %><option value="<%= p.id %>"><%= p.nama %> (<%= p.nip %>)</option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Jenis Assesmen</label>
+          <input type="text" name="jenis_assesmen" required placeholder="Contoh: Assesmen Kompetensi Teknis" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Tanggal Assesmen</label>
+          <input type="date" name="tanggal_assesmen" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Status</label>
+          <select name="status" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="Belum">Belum</option>
+            <option value="Selesai">Selesai</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Skor (opsional)</label>
+          <input type="number" step="0.01" name="skor" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Catatan</label>
+          <textarea name="catatan" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-assesmen')" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: Tambah Identifikasi -->
+  <!-- ============================================================= -->
+  <div id="modal-identifikasi" class="modal-overlay hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <p class="font-bold text-gray-800">Tambah Identifikasi PPK</p>
+        <button type="button" onclick="closeModal('modal-identifikasi')" class="text-gray-400 hover:text-gray-600">&#10005;</button>
+      </div>
+      <form action="/hcr-identifikasi/tambah" method="POST" class="p-6 space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=identifikasi">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Pegawai</label>
+          <select name="pegawai_id" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% pegawai.forEach(p => { %><option value="<%= p.id %>"><%= p.nama %> (<%= p.nip %>)</option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Kompetensi yang Dikembangkan</label>
+          <input type="text" name="kompetensi_dikembangkan" required placeholder="Contoh: Manajerial, Teknis Turbin, dll" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Alasan/Potensi</label>
+          <textarea name="alasan_potensi" rows="3" placeholder="Kenapa pegawai ini dianggap punya potensi" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Status</label>
+          <select name="status" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="Diusulkan">Diusulkan</option>
+            <option value="Disetujui">Disetujui</option>
+            <option value="Ditolak">Ditolak</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Catatan</label>
+          <textarea name="catatan" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-identifikasi')" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: Tambah Pelaksanaan -->
+  <!-- ============================================================= -->
+  <div id="modal-pelaksanaan" class="modal-overlay hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <p class="font-bold text-gray-800">Tambah Kegiatan Pelaksanaan PPK</p>
+        <button type="button" onclick="closeModal('modal-pelaksanaan')" class="text-gray-400 hover:text-gray-600">&#10005;</button>
+      </div>
+      <form action="/hcr-pelaksanaan/tambah" method="POST" class="p-6 space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=pelaksanaan">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Pegawai</label>
+          <select name="pegawai_id" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% pegawai.forEach(p => { %><option value="<%= p.id %>"><%= p.nama %> (<%= p.nip %>)</option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama Kegiatan</label>
+          <input type="text" name="nama_kegiatan" required placeholder="Contoh: Pelatihan Manajerial Tahap 1" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Jadwal Tanggal</label>
+          <input type="date" name="jadwal_tanggal" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Status</label>
+          <select name="status" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="Terjadwal">Terjadwal</option>
+            <option value="Berlangsung">Berlangsung</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Terlambat">Terlambat</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Log Aktivitas</label>
+          <textarea name="log_aktivitas" rows="3" placeholder="Catatan perkembangan kegiatan bulan ini" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-pelaksanaan')" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: Tambah Evaluasi -->
+  <!-- ============================================================= -->
+  <div id="modal-evaluasi" class="modal-overlay hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <p class="font-bold text-gray-800">Tambah Evaluasi PPK</p>
+        <button type="button" onclick="closeModal('modal-evaluasi')" class="text-gray-400 hover:text-gray-600">&#10005;</button>
+      </div>
+      <form action="/hcr-evaluasi/tambah" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=evaluasi">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Pegawai</label>
+          <select name="pegawai_id" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% pegawai.forEach(p => { %><option value="<%= p.id %>"><%= p.nama %> (<%= p.nip %>)</option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama Program</label>
+          <input type="text" name="nama_program" required placeholder="Contoh: Pelatihan Manajerial Tahap 1" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Tanggal Evaluasi</label>
+          <input type="date" name="tanggal_evaluasi" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Skor Evaluasi (0-100)</label>
+          <input type="number" step="0.01" min="0" max="100" name="skor_evaluasi" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Bukti Dukung (PDF/Gambar/Word, maks 5MB)</label>
+          <input type="file" name="file_bukti" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Catatan</label>
+          <textarea name="catatan" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-evaluasi')" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: Tambah Aksi -->
+  <!-- ============================================================= -->
+  <div id="modal-aksi" class="modal-overlay hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <p class="font-bold text-gray-800">Tambah Aksi</p>
+        <button type="button" onclick="closeModal('modal-aksi')" class="text-gray-400 hover:text-gray-600">&#10005;</button>
+      </div>
+      <form action="/hcr-aksi/tambah" method="POST" class="p-6 space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=aksi">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama Aksi</label>
+          <input type="text" name="nama_aksi" required placeholder="Contoh: Perbaikan sistem antrean STPD" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">PIC (Penanggung Jawab)</label>
+          <select name="pic_pegawai_id" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="">- Tidak ditentukan -</option>
+            <% pegawai.forEach(p => { %><option value="<%= p.id %>"><%= p.nama %></option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Target Selesai</label>
+          <input type="date" name="target_selesai" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Status</label>
+          <select name="status" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="Belum">Belum</option>
+            <option value="Proses">Proses</option>
+            <option value="Selesai">Selesai</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Catatan</label>
+          <textarea name="catatan" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-aksi')" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: Tambah Penugasan -->
+  <!-- ============================================================= -->
+  <div id="modal-penugasan" class="modal-overlay hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <p class="font-bold text-gray-800">Tambah Penugasan</p>
+        <button type="button" onclick="closeModal('modal-penugasan')" class="text-gray-400 hover:text-gray-600">&#10005;</button>
+      </div>
+      <form action="/hcr-penugasan/tambah" method="POST" class="p-6 space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=penugasan">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Pegawai</label>
+          <select name="pegawai_id" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% pegawai.forEach(p => { %><option value="<%= p.id %>"><%= p.nama %> (<%= p.nip %>)</option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama Penugasan</label>
+          <input type="text" name="nama_penugasan" required placeholder="Contoh: Penugasan STPD Bulan Ini" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1.5">Target</label>
+            <input type="number" step="0.01" name="target" value="100" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1.5">Realisasi</label>
+            <input type="number" step="0.01" name="realisasi" value="0" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Catatan</label>
+          <textarea name="catatan" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-penugasan')" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: Tambah Sertifikasi -->
+  <!-- ============================================================= -->
+  <div id="modal-sertifikasi" class="modal-overlay hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <p class="font-bold text-gray-800">Tambah Sertifikasi</p>
+        <button type="button" onclick="closeModal('modal-sertifikasi')" class="text-gray-400 hover:text-gray-600">&#10005;</button>
+      </div>
+      <form action="/hcr-sertifikasi/tambah" method="POST" class="p-6 space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=sertifikasi">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Pegawai</label>
+          <select name="pegawai_id" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% pegawai.forEach(p => { %><option value="<%= p.id %>"><%= p.nama %> (<%= p.nip %>)</option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama Sertifikasi</label>
+          <input type="text" name="nama_sertifikasi" required placeholder="Contoh: Sertifikasi K3 Operator Turbin" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Tanggal Lulus</label>
+          <input type="date" name="tanggal_lulus" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Masa Berlaku (kosongkan jika tanpa batas)</label>
+          <input type="date" name="masa_berlaku" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Catatan</label>
+          <textarea name="catatan" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-sertifikasi')" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: Tambah Hari Pengembangan -->
+  <!-- ============================================================= -->
+  <div id="modal-hari" class="modal-overlay hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <p class="font-bold text-gray-800">Tambah Data Pelatihan</p>
+        <button type="button" onclick="closeModal('modal-hari')" class="text-gray-400 hover:text-gray-600">&#10005;</button>
+      </div>
+      <form action="/hcr-hari-pengembangan/tambah" method="POST" class="p-6 space-y-4">
+        <input type="hidden" name="bulan" value="<%= bulan %>">
+        <input type="hidden" name="tahun" value="<%= tahun %>">
+        <input type="hidden" name="kembali" value="<%= kembaliDasar %>&tab=hari">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Pegawai</label>
+          <select name="pegawai_id" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+            <% pegawai.forEach(p => { %><option value="<%= p.id %>"><%= p.nama %> (<%= p.nip %>)</option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Nama Pelatihan</label>
+          <input type="text" name="nama_pelatihan" required placeholder="Contoh: Diklat K3 Pembangkit" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Tanggal</label>
+          <input type="date" name="tanggal" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Jumlah Hari</label>
+          <input type="number" step="0.5" min="0.5" name="jumlah_hari" value="1" required class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1.5">Catatan</label>
+          <textarea name="catatan" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-hari')" class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-lg text-sm shadow-sm hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const BULAN_AKTIF = <%= bulan %>;
+    const TAHUN_AKTIF = <%= tahun %>;
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab-panel').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById('tab-panel-' + tab);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.tab-card').forEach(el => {
+        if (el.dataset.tabbtn === tab) {
+          el.classList.add('ring-2', 'ring-brand-blue', 'border-brand-blue');
+        } else {
+          el.classList.remove('ring-2', 'ring-brand-blue', 'border-brand-blue');
+        }
+      });
+
+      const input = document.getElementById('filter-tab-input');
+      if (input) input.value = tab;
+
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url);
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+    }
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+    }
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal(overlay.id);
+      });
+    });
+
+    async function ubahStatusAksi(id, statusBaru) {
+      await fetch(`/hcr-aksi/status/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `status=${statusBaru}`
+      });
+      window.location.href = `/hcr-dashboard?bulan=${BULAN_AKTIF}&tahun=${TAHUN_AKTIF}&tab=aksi`;
+    }
+
+    // Aktifkan tab sesuai parameter URL (dipakai saat balik dari aksi tambah/edit/hapus)
+    (function initTab() {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab') || 'assesmen';
+      showTab(tab);
+    })();
+  </script>
+</body>
+</html>

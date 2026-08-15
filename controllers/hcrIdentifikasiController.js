@@ -57,7 +57,7 @@ exports.tambah = async (req, res) => {
     await sinkronSkorHcr(bulan, tahun);
 
     req.flash('success', 'Data identifikasi PPK berhasil disimpan');
-    res.redirect(`/hcr-identifikasi?bulan=${bulan}&tahun=${tahun}`);
+    res.redirect(req.body.kembali || `/hcr-identifikasi?bulan=${bulan}&tahun=${tahun}`);
   } catch (err) {
     console.error('ERROR TAMBAH IDENTIFIKASI:', err);
     req.flash('error', 'Gagal menyimpan data');
@@ -115,7 +115,7 @@ exports.hapus = async (req, res) => {
     await sinkronSkorHcr(existing[0].periode_bulan, existing[0].periode_tahun);
   }
   req.flash('success', 'Data berhasil dihapus');
-  res.redirect('/hcr-identifikasi');
+  res.redirect(req.body.kembali || '/hcr-identifikasi');
 };
 
 // Sinkron ke hcr_realisasi (item MLI_IDENT_PPK), dihitung dari % pegawai yang sudah diidentifikasi

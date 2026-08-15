@@ -61,7 +61,7 @@ exports.tambah = async (req, res) => {
     await sinkronSkorHcr(bulan, tahun);
 
     req.flash('success', 'Data assesmen berhasil disimpan');
-    res.redirect(`/hcr-assesmen?bulan=${bulan}&tahun=${tahun}`);
+    res.redirect(req.body.kembali || `/hcr-assesmen?bulan=${bulan}&tahun=${tahun}`);
   } catch (err) {
     console.error('ERROR TAMBAH ASSESMEN:', err);
     req.flash('error', 'Gagal menyimpan data assesmen');
@@ -122,7 +122,7 @@ exports.hapus = async (req, res) => {
     await sinkronSkorHcr(existing[0].periode_bulan, existing[0].periode_tahun);
   }
   req.flash('success', 'Data assesmen berhasil dihapus');
-  res.redirect('/hcr-assesmen');
+  res.redirect(req.body.kembali || '/hcr-assesmen');
 };
 
 // Fungsi bantu: hitung ulang % assesmen selesai, lalu simpan sebagai skor item HCR #1 (MLI_ASSESMEN)

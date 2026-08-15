@@ -59,7 +59,7 @@ exports.tambah = async (req, res) => {
     await sinkronSkorHcr(bulan, tahun);
 
     req.flash('success', 'Data pelaksanaan PPK berhasil disimpan');
-    res.redirect(`/hcr-pelaksanaan?bulan=${bulan}&tahun=${tahun}`);
+    res.redirect(req.body.kembali || `/hcr-pelaksanaan?bulan=${bulan}&tahun=${tahun}`);
   } catch (err) {
     console.error('ERROR TAMBAH PELAKSANAAN:', err);
     req.flash('error', 'Gagal menyimpan data');
@@ -117,7 +117,7 @@ exports.hapus = async (req, res) => {
     await sinkronSkorHcr(existing[0].periode_bulan, existing[0].periode_tahun);
   }
   req.flash('success', 'Data berhasil dihapus');
-  res.redirect('/hcr-pelaksanaan');
+  res.redirect(req.body.kembali || '/hcr-pelaksanaan');
 };
 
 // Halaman detail 1 kegiatan + daftar log aktivitasnya

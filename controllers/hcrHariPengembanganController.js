@@ -74,7 +74,7 @@ exports.tambah = async (req, res) => {
     await sinkronSkorHcr(bulan, tahun);
 
     req.flash('success', 'Data pelatihan berhasil disimpan');
-    res.redirect(`/hcr-hari-pengembangan?bulan=${bulan}&tahun=${tahun}`);
+    res.redirect(req.body.kembali || `/hcr-hari-pengembangan?bulan=${bulan}&tahun=${tahun}`);
   } catch (err) {
     console.error('ERROR TAMBAH HARI PENGEMBANGAN:', err);
     req.flash('error', 'Gagal menyimpan data');
@@ -132,7 +132,7 @@ exports.hapus = async (req, res) => {
     await sinkronSkorHcr(existing[0].periode_bulan, existing[0].periode_tahun);
   }
   req.flash('success', 'Data berhasil dihapus');
-  res.redirect('/hcr-hari-pengembangan');
+  res.redirect(req.body.kembali || '/hcr-hari-pengembangan');
 };
 
 // Sinkron ke hcr_realisasi: skornya = rata-rata (total hari per pegawai sepanjang tahun / target 8 hari) x 100, dibatasi maks 100
