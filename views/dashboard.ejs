@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -19,7 +18,11 @@ box-shadow:0 10px 25px rgba(15,23,42,.08)}
 .ocr-box{border:2px dashed #cbdde5;transition:.2s}
 .ocr-box:hover{border-color:#06b6d4;background:#f9fdff}
 .drawer{transition:.3s ease}
-@media(max-width:1280px){.layout{grid-template-columns:1fr}}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px}
+@media(max-width:768px){
+main{margin-left:0!important;padding:80px 14px 20px}
+}
 </style>
 </head>
 
@@ -30,29 +33,30 @@ box-shadow:0 10px 25px rgba(15,23,42,.08)}
 
 <main class="ml-64 pt-16 p-5 lg:p-6">
 
-<!-- HEADER -->
+<!-- HERO -->
 <div class="rounded-2xl p-6 mb-5 text-white relative overflow-hidden"
 style="background:linear-gradient(135deg,#092653,#0b426c)">
 
 <div class="relative z-10">
-<p class="text-cyan-300 text-[11px] font-bold uppercase tracking-widest">
-HCR Monitoring System
-</p>
+<div class="flex items-center gap-2 mb-2">
+<span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+<span class="text-emerald-300 text-[10px] font-bold uppercase tracking-widest">
+System Online
+</span>
+</div>
 
-<h1 class="text-2xl font-bold mt-2">
-Selamat datang, <%= user.nama %>
-</h1>
+<h1 class="text-2xl font-bold">Monitoring Dashboard</h1>
 
 <p class="text-white/60 text-sm mt-1">
-Ringkasan kinerja HCR unit UPBW Belawan
+Monitoring HCR & OCR • UPBW Belawan
 </p>
 </div>
 
 <div class="absolute -right-12 -top-20 w-56 h-56 rounded-full
 bg-cyan-400/10"></div>
 
-<div class="absolute right-10 bottom-5
-w-20 h-20 rounded-full border border-white/5"></div>
+<div class="absolute right-12 bottom-5 w-20 h-20
+rounded-full border border-white/10"></div>
 </div>
 
 
@@ -60,10 +64,10 @@ w-20 h-20 rounded-full border border-white/5"></div>
 <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
 
 <% [
-['Total Pegawai','-','blue','P'],
-['Modul HCR Aktif','8 / 8','amber','✓'],
-['Rata-rata Skor','-','green','%'],
-['Pegawai Unggul','-','indigo','★']
+['Total Pegawai','blue','P'],
+['Modul HCR','amber','✓'],
+['Rata-rata Skor','green','%'],
+['Pegawai Unggul','indigo','★']
 ].forEach(x=>{ %>
 
 <div class="card stat p-5">
@@ -72,21 +76,16 @@ w-20 h-20 rounded-full border border-white/5"></div>
 <div>
 <p class="text-xs text-slate-400"><%=x[0]%></p>
 
-<h2 class="text-2xl font-bold mt-1 stat-value">
-<%=x[1]%>
-</h2>
+<h2 class="text-2xl font-bold mt-1 stat-value">-</h2>
 
 <p class="text-[10px] text-slate-400 mt-2">
-<%=x[0]==='Modul HCR Aktif'
-?'Seluruh modul tersedia'
-:'Data HCR terbaru'%>
+Data monitoring terbaru
 </p>
 </div>
 
-<div class="w-11 h-11 rounded-xl bg-<%=x[2]%>-50
-text-<%=x[2]%>-600 flex items-center justify-center
-font-bold">
-<%=x[3]%>
+<div class="w-11 h-11 rounded-xl bg-<%=x[1]%>-50
+text-<%=x[1]%>-600 flex items-center justify-center font-bold">
+<%=x[2]%>
 </div>
 
 </div>
@@ -96,158 +95,134 @@ font-bold">
 </div>
 
 
-<!-- OCR -->
-<div class="card ocr p-5 mb-5">
+<!-- HCR + OCR -->
+<div class="grid xl:grid-cols-3 gap-5 mb-5">
 
-<div class="flex flex-col md:flex-row md:justify-between
-md:items-center gap-3 mb-5">
+<!-- HCR STATUS -->
+<div class="card xl:col-span-2 p-5">
+
+<div class="flex justify-between items-center mb-5">
 
 <div>
-<div class="flex items-center gap-2">
+<p class="text-[10px] text-cyan-600 font-bold uppercase tracking-widest">
+Human Capital Rating
+</p>
 
-<h2 class="font-bold text-lg">
-OCR Dokumen
+<h2 class="font-bold text-lg mt-1">
+Monitoring HCR
 </h2>
 
-<span class="px-2 py-1 rounded-full bg-amber-50
-text-amber-600 text-[9px] font-bold">
-COMING SOON
-</span>
-
-</div>
-
-<p class="text-xs text-slate-400 mt-1">
-Otomatisasi pembacaan dokumen untuk mempercepat input HCR.
+<p class="text-xs text-slate-400">
+Evaluasi dan pemantauan performa pegawai
 </p>
 </div>
 
 <div class="flex items-center gap-2 text-[10px]">
-<span class="w-2 h-2 rounded-full bg-amber-400"></span>
-<span class="text-slate-400">Dalam pengembangan</span>
+<span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+<span class="text-emerald-600 font-semibold">Aktif</span>
 </div>
 
 </div>
 
+<div class="grid sm:grid-cols-3 gap-3">
 
-<div class="grid lg:grid-cols-3 gap-4">
+<div class="bg-slate-50 rounded-xl p-4">
+<p class="text-[10px] text-slate-400">Data Pegawai</p>
+<p class="font-bold text-lg mt-1">Terpantau</p>
+<p class="text-[10px] text-emerald-500 mt-1">Realtime</p>
+</div>
 
-<!-- UPLOAD -->
-<div class="ocr-box lg:col-span-2 rounded-2xl bg-white/70
-min-h-[175px] flex items-center justify-center p-6">
+<div class="bg-slate-50 rounded-xl p-4">
+<p class="text-[10px] text-slate-400">Penilaian</p>
+<p class="font-bold text-lg mt-1">8 Modul</p>
+<p class="text-[10px] text-cyan-500 mt-1">Tersedia</p>
+</div>
 
-<div class="text-center">
+<div class="bg-slate-50 rounded-xl p-4">
+<p class="text-[10px] text-slate-400">Status Sistem</p>
+<p class="font-bold text-lg mt-1">Online</p>
+<p class="text-[10px] text-emerald-500 mt-1">Normal</p>
+</div>
 
-<div class="w-14 h-14 mx-auto rounded-2xl bg-cyan-50
+</div>
+</div>
+
+
+<!-- OCR -->
+<div class="card ocr p-5">
+
+<div class="flex justify-between items-start mb-4">
+
+<div>
+<p class="text-[10px] text-cyan-600 font-bold uppercase">
+Document Intelligence
+</p>
+
+<h2 class="font-bold text-lg mt-1">OCR</h2>
+
+<p class="text-xs text-slate-400 mt-1">
+Otomatisasi pembacaan dokumen
+</p>
+</div>
+
+<span class="px-2 py-1 rounded-full bg-emerald-50
+text-emerald-600 text-[9px] font-bold">
+READY
+</span>
+
+</div>
+
+<div class="ocr-box rounded-xl bg-white/70 p-5 text-center">
+
+<div class="w-11 h-11 mx-auto rounded-xl bg-cyan-50
 text-cyan-500 flex items-center justify-center mb-3">
 
-<svg width="25" height="25" viewBox="0 0 24 24"
-fill="none" stroke="currentColor" stroke-width="1.8">
-<path d="M12 16V4"/>
-<path d="m7 9 5-5 5 5"/>
+<svg width="22" height="22" fill="none"
+stroke="currentColor" stroke-width="1.8">
+<path d="M12 16V4m0 0L7 9m5-5 5 5"/>
 <path d="M5 20h14"/>
 </svg>
 
 </div>
 
-<p class="font-semibold text-sm">
-Upload Dokumen
+<p class="text-xs font-semibold">
+Pemrosesan Dokumen
 </p>
 
-<p class="text-xs text-slate-400 mt-1">
-PDF, JPG atau PNG • Maksimal 10 MB
+<p class="text-[10px] text-slate-400 mt-1">
+PDF / JPG / PNG
 </p>
 
 <button disabled
-class="mt-4 px-5 py-2 rounded-lg bg-slate-100
-text-slate-400 text-xs font-semibold">
-Pilih Dokumen
+class="mt-3 px-4 py-2 rounded-lg bg-slate-100
+text-slate-400 text-[10px] font-semibold">
+Segera Hadir
 </button>
 
 </div>
-</div>
 
-
-<!-- OCR PROCESS -->
-<div class="bg-white rounded-2xl border border-slate-100 p-5">
-
-<div class="flex justify-between items-center mb-4">
-
-<p class="font-semibold text-sm">
-Proses OCR
-</p>
-
-<span class="text-[9px] px-2 py-1 rounded-full
-bg-slate-50 text-slate-400">
-3 Tahap
-</span>
-
-</div>
-
-<div class="space-y-4">
-
-<div class="flex gap-3">
-<div class="w-7 h-7 rounded-lg bg-cyan-50
-text-cyan-600 flex items-center justify-center
-text-[10px] font-bold">01</div>
-
-<div>
-<p class="text-xs font-semibold">Upload Dokumen</p>
-<p class="text-[10px] text-slate-400 mt-1">
-Pilih dokumen HCR
-</p>
-</div>
-</div>
-
-<div class="h-3 border-l border-dashed border-slate-200 ml-3"></div>
-
-<div class="flex gap-3">
-<div class="w-7 h-7 rounded-lg bg-blue-50
-text-blue-600 flex items-center justify-center
-text-[10px] font-bold">02</div>
-
-<div>
-<p class="text-xs font-semibold">Scan & Ekstraksi</p>
-<p class="text-[10px] text-slate-400 mt-1">
-Sistem membaca isi dokumen
-</p>
-</div>
-</div>
-
-<div class="h-3 border-l border-dashed border-slate-200 ml-3"></div>
-
-<div class="flex gap-3">
-<div class="w-7 h-7 rounded-lg bg-emerald-50
-text-emerald-600 flex items-center justify-center
-text-[10px] font-bold">03</div>
-
-<div>
-<p class="text-xs font-semibold">Input HCR</p>
-<p class="text-[10px] text-slate-400 mt-1">
-Data siap digunakan
-</p>
-</div>
-</div>
-
-</div>
+<div class="flex justify-between mt-4 text-[10px]">
+<span class="text-slate-400">OCR Engine</span>
+<span class="text-amber-500 font-semibold">Development</span>
 </div>
 
 </div>
 </div>
 
 
-<!-- LEVEL + SUMMARY -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
+<!-- LEVEL -->
+<div class="grid xl:grid-cols-3 gap-5 mb-5">
 
-<!-- DONUT -->
 <div class="card xl:col-span-2 p-5">
 
-<div class="flex flex-col sm:flex-row
-sm:justify-between sm:items-center gap-3 mb-3">
+<div class="flex flex-col sm:flex-row sm:justify-between
+sm:items-center gap-3 mb-3">
 
 <div>
-<h2 class="font-bold">Distribusi Pegawai per Level</h2>
+<h2 class="font-bold">Distribusi Pegawai</h2>
+
 <p class="text-xs text-slate-400">
-Komposisi pegawai berdasarkan periode
+Komposisi berdasarkan level
 </p>
 </div>
 
@@ -256,54 +231,73 @@ Komposisi pegawai berdasarkan periode
 <select id="filter-bulan"
 class="border border-slate-200 rounded-lg px-2 py-2
 text-xs bg-white">
+
 <% ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu',
 'Sep','Okt','Nov','Des'].forEach((m,i)=>{ %>
+
 <option value="<%=i+1%>"><%=m%></option>
+
 <% }) %>
+
 </select>
 
 <input id="filter-tahun" type="number"
 value="<%=new Date().getFullYear()%>"
 class="border border-slate-200 rounded-lg px-2 py-2
 text-xs w-20">
-</div>
 
 </div>
+</div>
+
 
 <div class="relative h-[330px]">
+
 <canvas id="chartLevel"></canvas>
 
 <div class="absolute inset-0 flex items-center
 justify-center pointer-events-none">
 
 <div class="text-center">
-<b id="totalChart" class="text-4xl font-bold">0</b>
-<p class="text-[10px] text-slate-400 uppercase tracking-wider">
+
+<b id="totalChart"
+class="text-4xl font-bold">0</b>
+
+<p class="text-[10px] text-slate-400 uppercase">
 Pegawai
 </p>
-</div>
 
 </div>
 </div>
 
+</div>
 </div>
 
 
 <!-- SUMMARY -->
 <div class="card p-5">
 
-<h2 class="font-bold">Ringkasan Level</h2>
+<div class="flex justify-between items-center mb-1">
+
+<h2 class="font-bold">Level Pegawai</h2>
+
+<span class="text-[9px] bg-cyan-50 text-cyan-600
+px-2 py-1 rounded-full">
+DETAIL
+</span>
+
+</div>
 
 <p class="text-xs text-slate-400 mb-4">
-Pilih level untuk melihat detail
+Klik level untuk membuka detail
 </p>
 
 <div id="ringkasan-level" class="space-y-2">
-<p class="text-xs text-slate-400">Memuat data...</p>
+<p class="text-xs text-slate-400">
+Memuat data...
+</p>
 </div>
 
 </div>
-
 </div>
 
 
@@ -314,9 +308,14 @@ Pilih level untuk melihat detail
 sm:items-center gap-3 mb-4">
 
 <div>
-<h2 class="font-bold">Tren Skor HCR Tahunan</h2>
+<p class="text-[10px] text-cyan-600 font-bold uppercase">
+Performance Analytics
+</p>
+
+<h2 class="font-bold">Tren Skor HCR</h2>
+
 <p class="text-xs text-slate-400">
-Rata-rata skor seluruh pegawai
+Rata-rata skor tahunan
 </p>
 </div>
 
@@ -347,29 +346,32 @@ class="tahun-btn px-3 py-1.5 rounded-md text-xs
 </main>
 
 
-<!-- RIGHT DETAIL DRAWER -->
+<!-- DRAWER -->
 <div id="drawer-bg"
 class="hidden fixed inset-0 bg-slate-900/30 z-40"></div>
 
 <aside id="drawer"
-class="fixed top-0 right-0 h-full w-[380px] max-w-[90vw]
+class="fixed top-0 right-0 h-full w-[390px] max-w-[92vw]
 bg-white z-50 shadow-2xl translate-x-full drawer">
 
 <div class="h-full flex flex-col">
 
+<!-- DRAWER HEADER -->
 <div class="p-5 border-b border-slate-100">
 
 <div class="flex justify-between items-start">
 
 <div>
+
 <p class="text-[10px] text-cyan-600 font-bold uppercase tracking-widest">
-Detail Level
+Level Pegawai
 </p>
 
 <h2 id="detail-title"
 class="text-xl font-bold mt-1">
-Pilih Level
+Detail
 </h2>
+
 </div>
 
 <button id="close-detail"
@@ -380,30 +382,59 @@ text-slate-400 text-xl">
 
 </div>
 
+
 <div class="grid grid-cols-2 gap-3 mt-5">
 
 <div class="bg-slate-50 rounded-xl p-3">
-<p class="text-[10px] text-slate-400">Pegawai</p>
-<b id="detail-total" class="text-lg">0</b>
+
+<p class="text-[10px] text-slate-400">
+Total Pegawai
+</p>
+
+<b id="detail-total"
+class="text-lg">0</b>
+
 </div>
 
 <div class="bg-slate-50 rounded-xl p-3">
-<p class="text-[10px] text-slate-400">Rata-rata</p>
-<b id="detail-score" class="text-lg">0%</b>
-</div>
+
+<p class="text-[10px] text-slate-400">
+Rata-rata Skor
+</p>
+
+<b id="detail-score"
+class="text-lg">0%</b>
 
 </div>
 
 </div>
 
+
+<!-- SEARCH -->
+<div class="relative mt-4">
+
+<input id="searchPegawai"
+type="text"
+placeholder="Cari nama pegawai..."
+class="w-full border border-slate-200 rounded-xl
+px-4 py-2.5 text-xs outline-none
+focus:border-cyan-400">
+
+<span class="absolute right-3 top-2.5
+text-slate-300">⌕</span>
+
+</div>
+
+</div>
+
+
+<!-- LIST -->
 <div id="detail-list"
-class="flex-1 overflow-auto p-3">
+class="flex-1 overflow-y-auto p-3">
 
 <div class="text-center py-20 text-slate-400">
-<p class="text-3xl mb-3">◌</p>
 <p class="text-xs">
-Klik level pada grafik<br>
-untuk melihat pegawai
+Pilih level pada grafik
 </p>
 </div>
 
@@ -417,14 +448,17 @@ untuk melihat pegawai
 
 <script>
 
-let chartLevel,chartTren,pegawai=[];
+let chartLevel,chartTren,pegawai=[],detailData=[];
 const warna=['#06B6D4','#2563EB','#10B981','#F59E0B','#8B5CF6','#EF4444'];
 const $=id=>document.getElementById(id);
 
 
 /* STAT */
+
 async function loadStats(){
+
 try{
+
 const r=await fetch('/hcr-skor-gabungan-json');
 const {data}=await r.json(),n=data.length;
 
@@ -436,14 +470,17 @@ const unggul=data.filter(x=>x.kategori==='Tinggi').length;
 const v=document.querySelectorAll('.stat-value');
 
 v[0].textContent=n;
+v[1].textContent='8 / 8';
 v[2].textContent=avg+'%';
 v[3].textContent=unggul;
 
 }catch(e){console.error(e)}
+
 }
 
 
 /* LEVEL */
+
 async function loadLevel(){
 
 const bulan=$('filter-bulan').value;
@@ -471,6 +508,9 @@ const values=labels.map(x=>count[x]);
 $('totalChart').textContent=data.length;
 
 if(chartLevel)chartLevel.destroy();
+
+
+/* DONUT */
 
 chartLevel=new Chart($('chartLevel'),{
 
@@ -513,7 +553,8 @@ return ` ${c.label}: ${c.raw} pegawai (${(c.raw/t*100).toFixed(1)}%)`;
 },
 
 onClick:(e,items)=>{
-if(items.length)showDetail(labels[items[0].index]);
+if(items.length)
+showDetail(labels[items[0].index]);
 }
 
 }
@@ -522,33 +563,53 @@ if(items.length)showDetail(labels[items[0].index]);
 
 
 /* SUMMARY */
+
 $('ringkasan-level').innerHTML=labels.map((l,i)=>{
 
-const persen=(count[l]/data.length*100).toFixed(0);
+const persen=data.length
+?(count[l]/data.length*100).toFixed(0):0;
 
-return `
+return`
+
 <button onclick="showDetail('${l.replace(/'/g,"\\'") }')"
-class="w-full text-left p-3 rounded-xl hover:bg-slate-50
-transition">
+class="w-full text-left p-3 rounded-xl
+hover:bg-slate-50 transition">
 
 <div class="flex justify-between mb-2">
-<span class="text-xs font-semibold">${l}</span>
-<span class="text-[10px] text-slate-400">
-${count[l]} pegawai
+
+<span class="text-xs font-semibold">
+${l}
 </span>
+
+<span class="text-[10px] text-slate-400">
+${count[l]}
+</span>
+
 </div>
 
 <div class="progress">
+
 <div class="bar"
-style="width:${persen}%;background:${warna[i%warna.length]}">
-</div>
+style="width:${persen}%;
+background:${warna[i%warna.length]}">
 </div>
 
-<p class="text-[10px] text-slate-400 mt-1">
+</div>
+
+<div class="flex justify-between mt-1">
+
+<span class="text-[10px] text-slate-400">
 ${persen}% dari total
-</p>
+</span>
+
+<span class="text-[10px] text-cyan-500">
+Lihat →
+</span>
+
+</div>
 
 </button>
+
 `;
 
 }).join('');
@@ -565,25 +626,43 @@ $('ringkasan-level').innerHTML=
 }
 
 
-/* DETAIL DRAWER */
+/* DRAWER */
+
 function showDetail(level){
 
-const list=pegawai.filter(
+detailData=pegawai.filter(
 x=>(x.level||'Tanpa Level')===level
 );
 
-const avg=list.length
-?(list.reduce((a,b)=>a+Number(b.skorGabungan),0)/list.length).toFixed(1)
+const avg=detailData.length
+?(detailData.reduce((a,b)=>a+Number(b.skorGabungan),0)/detailData.length).toFixed(1)
 :0;
 
 $('detail-title').textContent=level;
-$('detail-total').textContent=list.length;
+$('detail-total').textContent=detailData.length;
 $('detail-score').textContent=avg+'%';
+$('searchPegawai').value='';
+
+renderDetail();
+
+$('drawer-bg').classList.remove('hidden');
+$('drawer').classList.remove('translate-x-full');
+
+}
+
+
+function renderDetail(){
+
+const keyword=$('searchPegawai').value.toLowerCase();
+
+const list=detailData.filter(p=>
+(p.nama||'').toLowerCase().includes(keyword)
+);
 
 const bulan=$('filter-bulan').value;
 const tahun=$('filter-tahun').value;
 
-$('detail-list').innerHTML=list.map(p=>`
+$('detail-list').innerHTML=list.length?list.map(p=>`
 
 <a href="/hcr-input-gabungan/${p.id}?bulan=${bulan}&tahun=${tahun}"
 class="flex items-center gap-3 p-3 rounded-xl
@@ -596,34 +675,60 @@ ${(p.nama||'?').charAt(0).toUpperCase()}
 </div>
 
 <div class="flex-1 min-w-0">
-<p class="text-sm font-semibold truncate">${p.nama}</p>
+
+<p class="text-sm font-semibold truncate">
+${p.nama}
+</p>
+
 <p class="text-[10px] text-slate-400">
 ${p.level||'Tanpa Level'}
 </p>
+
 </div>
 
 <span class="px-2 py-1 rounded-lg text-[10px] font-bold
-${p.kategori==='Tinggi'
+${
+p.kategori==='Tinggi'
 ?'bg-green-50 text-green-600'
 :p.kategori==='Sedang'
 ?'bg-yellow-50 text-yellow-600'
-:'bg-red-50 text-red-600'}">
+:'bg-red-50 text-red-600'
+}">
 ${p.skorGabungan}%
 </span>
 
 </a>
 
-`).join('');
+`).join(''):
+`
+<div class="text-center py-16">
+<p class="text-sm text-slate-400">
+Pegawai tidak ditemukan
+</p>
+</div>
+`;
 
-$('drawer-bg').classList.remove('hidden');
-$('drawer').classList.remove('translate-x-full');
 }
 
 
-/* CLOSE DRAWER */
+/* SEARCH */
+
+$('searchPegawai').addEventListener(
+'input',renderDetail
+);
+
+
+/* CLOSE */
+
 function closeDrawer(){
+
 $('drawer').classList.add('translate-x-full');
-setTimeout(()=>$('drawer-bg').classList.add('hidden'),250);
+
+setTimeout(
+()=>$('drawer-bg').classList.add('hidden'),
+250
+);
+
 }
 
 $('close-detail').onclick=closeDrawer;
@@ -631,11 +736,15 @@ $('drawer-bg').onclick=closeDrawer;
 
 
 /* TREND */
+
 async function loadTrend(tahun){
 
 try{
 
-const r=await fetch(`/hcr-tren-tahunan-json?tahun=${tahun}`);
+const r=await fetch(
+`/hcr-tren-tahunan-json?tahun=${tahun}`
+);
+
 const {dataTren}=await r.json();
 
 if(chartTren)chartTren.destroy();
@@ -651,14 +760,18 @@ labels:[
 ],
 
 datasets:[{
+
 data:dataTren,
+
 borderColor:'#06B6D4',
 backgroundColor:'rgba(6,182,212,.10)',
+
 fill:true,
 tension:.4,
 borderWidth:2.5,
 pointRadius:3,
 pointHoverRadius:6
+
 }]
 },
 
@@ -672,36 +785,52 @@ legend:{display:false}
 
 scales:{
 x:{grid:{display:false}},
+
 y:{
 beginAtZero:true,
 max:100,
-ticks:{callback:v=>v+'%'}
+ticks:{
+callback:v=>v+'%'
 }
+}
+
 }
 
 }
 
 });
 
-}catch(e){console.error(e)}
+}catch(e){
+console.error(e)
+}
 
 }
 
 
 /* FILTER */
+
 $('filter-bulan').onchange=loadLevel;
 $('filter-tahun').onchange=loadLevel;
+
 
 document.querySelectorAll('.tahun-btn').forEach(btn=>{
 
 btn.onclick=()=>{
 
 document.querySelectorAll('.tahun-btn').forEach(x=>{
-x.classList.remove('bg-white','shadow','text-slate-800');
+
+x.classList.remove(
+'bg-white','shadow','text-slate-800'
+);
+
 x.classList.add('text-slate-400');
+
 });
 
-btn.classList.add('bg-white','shadow','text-slate-800');
+btn.classList.add(
+'bg-white','shadow','text-slate-800'
+);
+
 btn.classList.remove('text-slate-400');
 
 loadTrend(btn.dataset.tahun);
@@ -712,6 +841,7 @@ loadTrend(btn.dataset.tahun);
 
 
 /* START */
+
 $('filter-bulan').value=new Date().getMonth()+1;
 
 loadStats();
@@ -720,6 +850,5 @@ loadTrend(new Date().getFullYear());
 
 </script>
 
-</body>
+</body>   
 </html>
-```

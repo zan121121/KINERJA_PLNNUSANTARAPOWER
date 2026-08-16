@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Data Pegawai PLN Nusantara Power</title>
+  <title>Data Pegawai - PLN Nusantara Power</title>
   <link rel="stylesheet" href="/css/output.css">
 </head>
 <body class="bg-gray-50">
@@ -10,51 +10,71 @@
   <%- include('../partials/topbar', { pageTitle: 'Data Pegawai' }) %>
 
   <main class="ml-64 pt-16 p-6">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
       <div>
         <p class="text-sm text-gray-400">Kelola data pegawai unit UPBW Belawan</p>
       </div>
-     <div class="flex gap-2">
-  <a href="/pegawai/custom-fields" class="bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 flex items-center gap-2">
-    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-    Kelola Field
-  </a>
-  <a href="/hcr-bobot" class="bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 flex items-center gap-2">
-    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-    </svg>
-    Bobot HCR
-  </a>
-  <a href="/pegawai/tambah" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-2">
-    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-    </svg>
-    Tambah Pegawai
-  </a>
-</div>
+      <div class="flex gap-2 flex-wrap">
+        <a href="/pegawai/import" class="bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L7 9m5-5 5 5M5 20h14" />
+          </svg>
+          Import Data
+        </a>
+        <a href="/pegawai/custom-fields" class="bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Kelola Field
+        </a>
+        <a href="/hcr-bobot" class="bg-white border border-gray-200 text-gray-600 px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Bobot HCR
+        </a>
+        <a href="/pegawai/tambah" class="bg-brand-blue text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm hover:opacity-90 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Tambah Pegawai
+        </a>
+      </div>
     </div>
 
     <!-- Stat ringkas -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-blue-50 flex items-center justify-center text-xl">👥</div>
+        <div class="w-11 h-11 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8zm6 1a4 4 0 10-8 0" />
+          </svg>
+        </div>
         <div>
           <p class="text-xs text-gray-400">Total Pegawai</p>
           <p class="text-xl font-bold text-gray-800"><%= pegawai.length %></p>
         </div>
       </div>
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-purple-50 flex items-center justify-center text-xl">♂️</div>
+        <div class="w-11 h-11 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-2a7 7 0 0114 0v2" />
+          </svg>
+        </div>
         <div>
           <p class="text-xs text-gray-400">Laki-laki</p>
           <p class="text-xl font-bold text-gray-800"><%= pegawai.filter(p => p.jenis_kelamin === 'L').length %></p>
         </div>
       </div>
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-pink-50 flex items-center justify-center text-xl">♀️</div>
+        <div class="w-11 h-11 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="4" stroke-linecap="round" stroke-linejoin="round" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-2a7 7 0 0114 0v2" />
+          </svg>
+        </div>
         <div>
           <p class="text-xs text-gray-400">Perempuan</p>
           <p class="text-xl font-bold text-gray-800"><%= pegawai.filter(p => p.jenis_kelamin === 'P').length %></p>
@@ -74,7 +94,9 @@
       <div class="relative max-w-sm">
         <input type="text" id="search-pegawai" placeholder="Cari nama atau NIP..." 
           class="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
       </div>
     </div>
 
@@ -85,7 +107,6 @@
             <th class="px-5 py-3 font-semibold">NIP</th>
             <th class="px-5 py-3 font-semibold">Nama</th>
             <th class="px-5 py-3 font-semibold">Jabatan</th>
-            <th class="px-5 py-3 font-semibold">Golongan</th>
             <th class="px-5 py-3 font-semibold">Tempat, Tgl Lahir</th>
             <th class="px-5 py-3 font-semibold">JK</th>
             <th class="px-5 py-3 font-semibold text-right">Aksi</th>
@@ -99,13 +120,6 @@
                 <button onclick="openDetail(<%= p.id %>)" class="hover:text-brand-blue text-left"><%= p.nama %></button>
               </td>
               <td class="px-5 py-3.5 text-gray-600"><%= p.jabatan || '-' %></td>
-              <td class="px-5 py-3.5">
-                <% if (p.golongan) { %>
-                  <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs font-semibold"><%= p.golongan %></span>
-                <% } else { %>
-                  <span class="text-gray-300">-</span>
-                <% } %>
-              </td>
               <td class="px-5 py-3.5 text-gray-500 text-xs">
                 <%= p.tempat_lahir || '-' %><% if (p.tanggal_lahir) { %>, <%= new Date(p.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %><% } %>
               </td>
@@ -167,7 +181,6 @@
         html += baris('NIP', data.pegawai.nip);
         html += baris('Nama', data.pegawai.nama);
         html += baris('Jabatan', data.pegawai.jabatan);
-        html += baris('Golongan', data.pegawai.golongan);
         html += baris('Tempat Lahir', data.pegawai.tempat_lahir);
         html += baris('Tanggal Lahir', data.pegawai.tanggal_lahir ? new Date(data.pegawai.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null);
         html += baris('Jenis Kelamin', data.pegawai.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan');

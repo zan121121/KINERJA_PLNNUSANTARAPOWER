@@ -11,18 +11,17 @@ exports.showTambah = async (req, res) => {
 };
 
 exports.tambah = async (req, res) => {
-  const { nip, nama, jabatan, tempat_lahir, tanggal_lahir, jenis_kelamin, golongan } = req.body;
+  const { nip, nama, jabatan, tempat_lahir, tanggal_lahir, jenis_kelamin } = req.body;
 
   try {
     const [hasil] = await db.query(
-      `INSERT INTO pegawai (nip, nama, jabatan, tempat_lahir, tanggal_lahir, jenis_kelamin, golongan) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [nip, nama, jabatan, tempat_lahir, tanggal_lahir || null, jenis_kelamin, golongan]
+      `INSERT INTO pegawai (nip, nama, jabatan, tempat_lahir, tanggal_lahir, jenis_kelamin) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [nip, nama, jabatan, tempat_lahir, tanggal_lahir || null, jenis_kelamin]
     );
 
     const pegawaiId = hasil.insertId;
 
-    // Simpan nilai custom fields (kalau ada)
     const [customFields] = await db.query('SELECT * FROM pegawai_custom_fields');
     for (const field of customFields) {
       const key = 'custom_' + field.id;
@@ -64,12 +63,12 @@ exports.showEdit = async (req, res) => {
 };
 
 exports.edit = async (req, res) => {
-  const { nip, nama, jabatan, tempat_lahir, tanggal_lahir, jenis_kelamin, golongan } = req.body;
+  const { nip, nama, jabatan, tempat_lahir, tanggal_lahir, jenis_kelamin } = req.body;
 
   try {
     await db.query(
-      `UPDATE pegawai SET nip=?, nama=?, jabatan=?, tempat_lahir=?, tanggal_lahir=?, jenis_kelamin=?, golongan=? WHERE id=?`,
-      [nip, nama, jabatan, tempat_lahir, tanggal_lahir || null, jenis_kelamin, golongan, req.params.id]
+      `UPDATE pegawai SET nip=?, nama=?, jabatan=?, tempat_lahir=?, tanggal_lahir=?, jenis_kelamin=? WHERE id=?`,
+      [nip, nama, jabatan, tempat_lahir, tanggal_lahir || null, jenis_kelamin, req.params.id]
     );
 
     const [customFields] = await db.query('SELECT * FROM pegawai_custom_fields');
@@ -93,32 +92,6 @@ exports.edit = async (req, res) => {
   }
 };
 
-// Data lengkap 1 pegawai dalam format JSON, buat ditampilkan di modal
-exports.detailJson = async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM pegawai WHERE id = ?', [req.params.id]);
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Data tidak ditemukan' });
-    }
-
-    const [customFields] = await db.query(
-      `SELECT pegawai_custom_fields.field_label, pegawai_custom_fields.field_type, pegawai_custom_values.value
-       FROM pegawai_custom_fields
-       LEFT JOIN pegawai_custom_values 
-         ON pegawai_custom_values.field_id = pegawai_custom_fields.id 
-         AND pegawai_custom_values.pegawai_id = ?
-       ORDER BY pegawai_custom_fields.urutan ASC, pegawai_custom_fields.id ASC`,
-      [req.params.id]
-    );
-
-    res.json({ pegawai: rows[0], customFields });
-  } catch (err) {
-    console.error('ERROR DETAIL JSON:', err);
-    res.status(500).json({ error: 'Gagal mengambil data' });
-  }
-};
-
-// Halaman konfirmasi sebelum hapus (kasih tau dampaknya)
 exports.showHapusConfirm = async (req, res) => {
   const [pegawaiRows] = await db.query('SELECT * FROM pegawai WHERE id = ?', [req.params.id]);
   if (pegawaiRows.length === 0) {
@@ -141,4 +114,28 @@ exports.hapus = async (req, res) => {
   await db.query('DELETE FROM pegawai WHERE id = ?', [req.params.id]);
   req.flash('success', 'Data pegawai berhasil dihapus');
   res.redirect('/pegawai');
+};
+
+exports.detailJson = async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM pegawai WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    }
+
+    const [customFields] = await db.query(
+      `SELECT pegawai_custom_fields.field_label, pegawai_custom_fields.field_type, pegawai_custom_values.value
+       FROM pegawai_custom_fields
+       LEFT JOIN pegawai_custom_values 
+         ON pegawai_custom_values.field_id = pegawai_custom_fields.id 
+         AND pegawai_custom_values.pegawai_id = ?
+       ORDER BY pegawai_custom_fields.urutan ASC, pegawai_custom_fields.id ASC`,
+      [req.params.id]
+    );
+
+    res.json({ pegawai: rows[0], customFields });
+  } catch (err) {
+    console.error('ERROR DETAIL JSON:', err);
+    res.status(500).json({ error: 'Gagal mengambil data' });
+  }
 };

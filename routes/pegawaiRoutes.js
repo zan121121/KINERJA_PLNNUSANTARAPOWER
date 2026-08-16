@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const pegawaiController = require('../controllers/pegawaiController');
 const { hanyaRole } = require('../middlewares/authMiddleware');
+const pegawaiImportController = require('../controllers/pegawaiImportController');
+
+router.get('/pegawai/import', hanyaRole('admin'), pegawaiImportController.showImport);
+router.post('/pegawai/import', hanyaRole('admin'), pegawaiImportController.uploadMiddleware, pegawaiImportController.proses);
 
 router.get('/pegawai', hanyaRole('admin', 'input', 'eksekutif'), pegawaiController.index);
 router.get('/pegawai/tambah', hanyaRole('admin'), pegawaiController.showTambah);
