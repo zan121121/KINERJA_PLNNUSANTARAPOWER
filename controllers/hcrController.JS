@@ -2,18 +2,7 @@ const db = require('../config/db');
 
 // Menu utama HCR — daftar 8 item, link ke modul masing-masing
 exports.menuHcr = (req, res) => {
-  const daftarItem = [
-    { kode: 'MLI_ASSESMEN', nama: 'MLI Assesmen Kompetensi', tipe: 'MLI', url: '/hcr-assesmen', aktif: true },
-    { kode: 'MLI_IDENT_PPK', nama: 'MLI Identifikasi PPK', tipe: 'MLI', url: '/hcr-identifikasi', aktif: true },
-    { kode: 'MLI_PELAKSANAAN_PPK', nama: 'MLI Pelaksanaan & Monitoring PPK', tipe: 'MLI', url: '/hcr-pelaksanaan', aktif: true },
-    { kode: 'MLI_EVALUASI_PPK', nama: 'MLI Evaluasi PPK', tipe: 'MLI', url: '/hcr-evaluasi', aktif: true },
-    { kode: 'MLI_AKSI', nama: 'MLI AKSI', tipe: 'MLI', url: '/hcr-aksi', aktif: true },
-    { kode: 'KPI_PENUGASAN', nama: 'KPI Penugasan', tipe: 'KPI', url: '/hcr-penugasan', aktif: true },
-    { kode: 'KPI_SERTIFIKASI', nama: 'KPI Sertifikasi Kompetensi', tipe: 'KPI', url: '/hcr-sertifikasi', aktif: true },
-    { kode: 'KPI_HARI_ORANG', nama: 'KPI Jml Hari Orang Pengembangan', tipe: 'KPI', url: '/hcr-hari-pengembangan', aktif: true },
-  ];
-
-  res.render('hcr/menu', { daftarItem });
+  res.redirect('/hcr-input-gabungan');
 };
 
 // Halaman pilih pegawai untuk input HCR (form generik lama)
@@ -105,6 +94,8 @@ exports.skorGabunganJson = async (req, res) => {
   const bobotMap = {};
   bobotRows.forEach(b => { bobotMap[b.hcr_item_id] = parseFloat(b.bobot_persen); });
 
+  const [levelRows] = await db.query('SELECT * FROM hcr_level_config ORDER BY urutan ASC');
+
   const [pegawai] = await db.query('SELECT id, nama FROM pegawai ORDER BY nama ASC');
   const [realisasi] = await db.query(
     'SELECT pegawai_id, hcr_item_id, skor FROM hcr_realisasi WHERE periode_bulan = ? AND periode_tahun = ?',
@@ -116,6 +107,11 @@ exports.skorGabunganJson = async (req, res) => {
     if (!skorMap[r.pegawai_id]) skorMap[r.pegawai_id] = {};
     skorMap[r.pegawai_id][r.hcr_item_id] = parseFloat(r.skor);
   });
+
+  function cariLevel(skor) {
+    const match = levelRows.find(l => skor >= parseFloat(l.min_skor) && skor <= parseFloat(l.max_skor));
+    return match ? match.level_label : '-';
+  }
 
   const hasil = pegawai.map(p => {
     const skorItem = skorMap[p.id] || {};
@@ -129,8 +125,56 @@ exports.skorGabunganJson = async (req, res) => {
     if (totalSkor >= 85) kategori = 'Tinggi';
     else if (totalSkor >= 60) kategori = 'Sedang';
 
-    return { id: p.id, nama: p.nama, skorGabungan: totalSkor.toFixed(1), kategori };
+    return {
+      id: p.id,
+      nama: p.nama,
+      skorGabungan: totalSkor.toFixed(1),
+      kategori,
+      level: cariLevel(totalSkor)
+    };
   });
 
   res.json({ bulan, tahun, data: hasil });
+};
+
+// Tren skor HCR rata-rata per bulan, sepanjang 1 tahun (untuk grafik garis di dashboard)
+exports.trenTahunanJson = async (req, res) => {
+  const tahun = parseInt(req.query.tahun) || new Date().getFullYear();
+
+  const [bobotRows] = await db.query('SELECT hcr_item_id, bobot_persen FROM hcr_bobot');
+  const bobotMap = {};
+  bobotRows.forEach(b => { bobotMap[b.hcr_item_id] = parseFloat(b.bobot_persen); });
+
+  const [realisasi] = await db.query(
+    'SELECT pegawai_id, hcr_item_id, periode_bulan, skor FROM hcr_realisasi WHERE periode_tahun = ?',
+    [tahun]
+  );
+
+  const map = {};
+  realisasi.forEach(r => {
+    if (!map[r.periode_bulan]) map[r.periode_bulan] = {};
+    if (!map[r.periode_bulan][r.pegawai_id]) map[r.periode_bulan][r.pegawai_id] = {};
+    map[r.periode_bulan][r.pegawai_id][r.hcr_item_id] = parseFloat(r.skor);
+  });
+
+  const dataTren = [];
+  for (let b = 1; b <= 12; b++) {
+    const pegawaiBulan = map[b] || {};
+    const idPegawaiTerisi = Object.keys(pegawaiBulan);
+    if (idPegawaiTerisi.length === 0) { dataTren.push(0); continue; }
+
+    let totalSkorBulan = 0;
+    idPegawaiTerisi.forEach(pid => {
+      const skorItem = pegawaiBulan[pid];
+      let totalSkor = 0;
+      Object.keys(bobotMap).forEach(itemId => {
+        const skor = skorItem[itemId] !== undefined ? skorItem[itemId] : 0;
+        totalSkor += (skor * bobotMap[itemId] / 100);
+      });
+      totalSkorBulan += totalSkor;
+    });
+    dataTren.push(parseFloat((totalSkorBulan / idPegawaiTerisi.length).toFixed(1)));
+  }
+
+  res.json({ tahun, dataTren });
 };

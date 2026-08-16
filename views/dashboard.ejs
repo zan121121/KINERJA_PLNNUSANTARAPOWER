@@ -1,165 +1,725 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard - PLN Nusantara Power</title>
-  <link rel="stylesheet" href="/css/output.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard - PLN Nusantara Power</title>
+<link rel="stylesheet" href="/css/output.css">
+
+<style>
+body{font-family:Inter,Arial,sans-serif}
+.card{background:#fff;border:1px solid #e8edf3;border-radius:18px;
+box-shadow:0 4px 18px rgba(15,23,42,.04)}
+.stat{transition:.2s}.stat:hover{transform:translateY(-3px);
+box-shadow:0 10px 25px rgba(15,23,42,.08)}
+.progress{height:6px;background:#edf1f5;border-radius:10px;overflow:hidden}
+.bar{height:100%;border-radius:10px}
+.ocr{background:linear-gradient(135deg,#fafdff,#eefaff)}
+.ocr-box{border:2px dashed #cbdde5;transition:.2s}
+.ocr-box:hover{border-color:#06b6d4;background:#f9fdff}
+.drawer{transition:.3s ease}
+@media(max-width:1280px){.layout{grid-template-columns:1fr}}
+</style>
 </head>
-<body class="bg-gray-50">
-  <%- include('partials/sidebar') %>
-  <%- include('partials/topbar', { pageTitle: 'Dashboard' }) %>
 
-  <main class="ml-64 pt-16 p-6">
-    <div id="stat-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <p class="text-gray-400 text-sm col-span-full">Memuat ringkasan...</p>
-    </div>
+<body class="bg-[#f6f8fb] text-slate-800">
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-      <p class="text-base font-bold text-gray-800 mb-1">Distribusi Skor HCR Pegawai</p>
-      <p class="text-sm text-gray-400 mb-5">Berdasarkan skor gabungan berbobot, periode bulan ini</p>
+<%- include('partials/sidebar') %>
+<%- include('partials/topbar',{pageTitle:'Dashboard'}) %>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="border border-gray-100 rounded-lg p-4 flex flex-col items-center">
-          <div class="relative w-28 h-28">
-            <canvas id="chartRendah"></canvas>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <p id="persen-rendah" class="text-lg font-bold text-red-600">0%</p>
-            </div>
-          </div>
-          <p class="text-sm font-semibold text-gray-700 mt-3">Perlu Perhatian</p>
-          <p class="text-xs text-gray-400">Skor &lt; 60% · <span id="jumlah-rendah">0</span> pegawai</p>
-        </div>
+<main class="ml-64 pt-16 p-5 lg:p-6">
 
-        <div class="border border-gray-100 rounded-lg p-4 flex flex-col items-center">
-          <div class="relative w-28 h-28">
-            <canvas id="chartSedang"></canvas>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <p id="persen-sedang" class="text-lg font-bold text-amber-600">0%</p>
-            </div>
-          </div>
-          <p class="text-sm font-semibold text-gray-700 mt-3">Berkembang</p>
-          <p class="text-xs text-gray-400">Skor 60–85% · <span id="jumlah-sedang">0</span> pegawai</p>
-        </div>
+<!-- HEADER -->
+<div class="rounded-2xl p-6 mb-5 text-white relative overflow-hidden"
+style="background:linear-gradient(135deg,#092653,#0b426c)">
 
-        <div class="border border-gray-100 rounded-lg p-4 flex flex-col items-center">
-          <div class="relative w-28 h-28">
-            <canvas id="chartTinggi"></canvas>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <p id="persen-tinggi" class="text-lg font-bold text-green-600">0%</p>
-            </div>
-          </div>
-          <p class="text-sm font-semibold text-gray-700 mt-3">Unggul</p>
-          <p class="text-xs text-gray-400">Skor &gt; 85% · <span id="jumlah-tinggi">0</span> pegawai</p>
-        </div>
-      </div>
-    </div>
+<div class="relative z-10">
+<p class="text-cyan-300 text-[11px] font-bold uppercase tracking-widest">
+HCR Monitoring System
+</p>
 
-  </main>
+<h1 class="text-2xl font-bold mt-2">
+Selamat datang, <%= user.nama %>
+</h1>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-  <script>
-    async function muatDistribusi() {
-      try {
-        const res = await fetch('/hcr-skor-gabungan-json');
-        const { data } = await res.json();
+<p class="text-white/60 text-sm mt-1">
+Ringkasan kinerja HCR unit UPBW Belawan
+</p>
+</div>
 
-        const total = data.length || 1;
-        const rendah = data.filter(d => d.kategori === 'Rendah').length;
-        const sedang = data.filter(d => d.kategori === 'Sedang').length;
-        const tinggi = data.filter(d => d.kategori === 'Tinggi').length;
+<div class="absolute -right-12 -top-20 w-56 h-56 rounded-full
+bg-cyan-400/10"></div>
 
-        const persenRendah = ((rendah / total) * 100).toFixed(0);
-        const persenSedang = ((sedang / total) * 100).toFixed(0);
-        const persenTinggi = ((tinggi / total) * 100).toFixed(0);
+<div class="absolute right-10 bottom-5
+w-20 h-20 rounded-full border border-white/5"></div>
+</div>
 
-        document.getElementById('jumlah-rendah').textContent = rendah;
-        document.getElementById('jumlah-sedang').textContent = sedang;
-        document.getElementById('jumlah-tinggi').textContent = tinggi;
 
-        document.getElementById('persen-rendah').textContent = persenRendah + '%';
-        document.getElementById('persen-sedang').textContent = persenSedang + '%';
-        document.getElementById('persen-tinggi').textContent = persenTinggi + '%';
+<!-- STAT -->
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
 
-        buatDonat('chartRendah', persenRendah, '#dc2626');
-        buatDonat('chartSedang', persenSedang, '#d97706');
-        buatDonat('chartTinggi', persenTinggi, '#16a34a');
-      } catch (err) {
-        console.error('Gagal memuat distribusi:', err);
-      }
-    }
+<% [
+['Total Pegawai','-','blue','P'],
+['Modul HCR Aktif','8 / 8','amber','✓'],
+['Rata-rata Skor','-','green','%'],
+['Pegawai Unggul','-','indigo','★']
+].forEach(x=>{ %>
 
-    function buatDonat(canvasId, persen, warna) {
-      const ctx = document.getElementById(canvasId).getContext('2d');
-      new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          datasets: [{
-            data: [persen, 100 - persen],
-            backgroundColor: [warna, '#f3f4f6'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          cutout: '75%',
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          animation: { animateRotate: true }
-        }
-      });
-    }
+<div class="card stat p-5">
+<div class="flex justify-between items-center">
 
-    muatDistribusi();
+<div>
+<p class="text-xs text-slate-400"><%=x[0]%></p>
 
-    async function muatStatCards() {
-      const wrapper = document.getElementById('stat-cards');
-      try {
-        const resPegawai = await fetch('/pegawai');
-        const html = await resPegawai.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const jumlahPegawai = doc.querySelectorAll('tbody tr[data-nama], tbody tr').length;
+<h2 class="text-2xl font-bold mt-1 stat-value">
+<%=x[1]%>
+</h2>
 
-        wrapper.innerHTML = `
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-            <div class="w-11 h-11 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8zm6 1a4 4 0 10-8 0" />
-              </svg>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400">Total Pegawai</p>
-              <p class="text-xl font-bold text-gray-800">${jumlahPegawai}</p>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-            <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400">Modul HCR Aktif</p>
-              <p class="text-xl font-bold text-gray-800">8 / 8</p>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-            <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2M5 21h2m4-15h2M9 10h2M9 14h2M9 18h2m2-15h2m-2 4h2m-2 4h2m-2 4h2" />
-              </svg>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400">Unit</p>
-              <p class="text-xl font-bold text-gray-800">UPBW Belawan</p>
-            </div>
-          </div>
-        `;
-      } catch (err) {
-        wrapper.innerHTML = '<p class="text-gray-400 text-sm col-span-full">Gagal memuat ringkasan</p>';
-      }
-    }
-    muatStatCards();
-  </script>
+<p class="text-[10px] text-slate-400 mt-2">
+<%=x[0]==='Modul HCR Aktif'
+?'Seluruh modul tersedia'
+:'Data HCR terbaru'%>
+</p>
+</div>
+
+<div class="w-11 h-11 rounded-xl bg-<%=x[2]%>-50
+text-<%=x[2]%>-600 flex items-center justify-center
+font-bold">
+<%=x[3]%>
+</div>
+
+</div>
+</div>
+
+<% }) %>
+</div>
+
+
+<!-- OCR -->
+<div class="card ocr p-5 mb-5">
+
+<div class="flex flex-col md:flex-row md:justify-between
+md:items-center gap-3 mb-5">
+
+<div>
+<div class="flex items-center gap-2">
+
+<h2 class="font-bold text-lg">
+OCR Dokumen
+</h2>
+
+<span class="px-2 py-1 rounded-full bg-amber-50
+text-amber-600 text-[9px] font-bold">
+COMING SOON
+</span>
+
+</div>
+
+<p class="text-xs text-slate-400 mt-1">
+Otomatisasi pembacaan dokumen untuk mempercepat input HCR.
+</p>
+</div>
+
+<div class="flex items-center gap-2 text-[10px]">
+<span class="w-2 h-2 rounded-full bg-amber-400"></span>
+<span class="text-slate-400">Dalam pengembangan</span>
+</div>
+
+</div>
+
+
+<div class="grid lg:grid-cols-3 gap-4">
+
+<!-- UPLOAD -->
+<div class="ocr-box lg:col-span-2 rounded-2xl bg-white/70
+min-h-[175px] flex items-center justify-center p-6">
+
+<div class="text-center">
+
+<div class="w-14 h-14 mx-auto rounded-2xl bg-cyan-50
+text-cyan-500 flex items-center justify-center mb-3">
+
+<svg width="25" height="25" viewBox="0 0 24 24"
+fill="none" stroke="currentColor" stroke-width="1.8">
+<path d="M12 16V4"/>
+<path d="m7 9 5-5 5 5"/>
+<path d="M5 20h14"/>
+</svg>
+
+</div>
+
+<p class="font-semibold text-sm">
+Upload Dokumen
+</p>
+
+<p class="text-xs text-slate-400 mt-1">
+PDF, JPG atau PNG • Maksimal 10 MB
+</p>
+
+<button disabled
+class="mt-4 px-5 py-2 rounded-lg bg-slate-100
+text-slate-400 text-xs font-semibold">
+Pilih Dokumen
+</button>
+
+</div>
+</div>
+
+
+<!-- OCR PROCESS -->
+<div class="bg-white rounded-2xl border border-slate-100 p-5">
+
+<div class="flex justify-between items-center mb-4">
+
+<p class="font-semibold text-sm">
+Proses OCR
+</p>
+
+<span class="text-[9px] px-2 py-1 rounded-full
+bg-slate-50 text-slate-400">
+3 Tahap
+</span>
+
+</div>
+
+<div class="space-y-4">
+
+<div class="flex gap-3">
+<div class="w-7 h-7 rounded-lg bg-cyan-50
+text-cyan-600 flex items-center justify-center
+text-[10px] font-bold">01</div>
+
+<div>
+<p class="text-xs font-semibold">Upload Dokumen</p>
+<p class="text-[10px] text-slate-400 mt-1">
+Pilih dokumen HCR
+</p>
+</div>
+</div>
+
+<div class="h-3 border-l border-dashed border-slate-200 ml-3"></div>
+
+<div class="flex gap-3">
+<div class="w-7 h-7 rounded-lg bg-blue-50
+text-blue-600 flex items-center justify-center
+text-[10px] font-bold">02</div>
+
+<div>
+<p class="text-xs font-semibold">Scan & Ekstraksi</p>
+<p class="text-[10px] text-slate-400 mt-1">
+Sistem membaca isi dokumen
+</p>
+</div>
+</div>
+
+<div class="h-3 border-l border-dashed border-slate-200 ml-3"></div>
+
+<div class="flex gap-3">
+<div class="w-7 h-7 rounded-lg bg-emerald-50
+text-emerald-600 flex items-center justify-center
+text-[10px] font-bold">03</div>
+
+<div>
+<p class="text-xs font-semibold">Input HCR</p>
+<p class="text-[10px] text-slate-400 mt-1">
+Data siap digunakan
+</p>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+</div>
+
+
+<!-- LEVEL + SUMMARY -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
+
+<!-- DONUT -->
+<div class="card xl:col-span-2 p-5">
+
+<div class="flex flex-col sm:flex-row
+sm:justify-between sm:items-center gap-3 mb-3">
+
+<div>
+<h2 class="font-bold">Distribusi Pegawai per Level</h2>
+<p class="text-xs text-slate-400">
+Komposisi pegawai berdasarkan periode
+</p>
+</div>
+
+<div class="flex gap-2">
+
+<select id="filter-bulan"
+class="border border-slate-200 rounded-lg px-2 py-2
+text-xs bg-white">
+<% ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu',
+'Sep','Okt','Nov','Des'].forEach((m,i)=>{ %>
+<option value="<%=i+1%>"><%=m%></option>
+<% }) %>
+</select>
+
+<input id="filter-tahun" type="number"
+value="<%=new Date().getFullYear()%>"
+class="border border-slate-200 rounded-lg px-2 py-2
+text-xs w-20">
+</div>
+
+</div>
+
+<div class="relative h-[330px]">
+<canvas id="chartLevel"></canvas>
+
+<div class="absolute inset-0 flex items-center
+justify-center pointer-events-none">
+
+<div class="text-center">
+<b id="totalChart" class="text-4xl font-bold">0</b>
+<p class="text-[10px] text-slate-400 uppercase tracking-wider">
+Pegawai
+</p>
+</div>
+
+</div>
+</div>
+
+</div>
+
+
+<!-- SUMMARY -->
+<div class="card p-5">
+
+<h2 class="font-bold">Ringkasan Level</h2>
+
+<p class="text-xs text-slate-400 mb-4">
+Pilih level untuk melihat detail
+</p>
+
+<div id="ringkasan-level" class="space-y-2">
+<p class="text-xs text-slate-400">Memuat data...</p>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- TREND -->
+<div class="card p-5">
+
+<div class="flex flex-col sm:flex-row sm:justify-between
+sm:items-center gap-3 mb-4">
+
+<div>
+<h2 class="font-bold">Tren Skor HCR Tahunan</h2>
+<p class="text-xs text-slate-400">
+Rata-rata skor seluruh pegawai
+</p>
+</div>
+
+<div class="flex gap-1 bg-slate-50 p-1 rounded-lg">
+
+<% const th=new Date().getFullYear(); %>
+
+<% [th-2,th-1,th].forEach(t=>{ %>
+
+<button data-tahun="<%=t%>"
+class="tahun-btn px-3 py-1.5 rounded-md text-xs
+<%=t===th?'bg-white shadow text-slate-800':'text-slate-400'%>">
+<%=t%>
+</button>
+
+<% }) %>
+
+</div>
+
+</div>
+
+<div class="h-[280px]">
+<canvas id="chartTren"></canvas>
+</div>
+
+</div>
+
+</main>
+
+
+<!-- RIGHT DETAIL DRAWER -->
+<div id="drawer-bg"
+class="hidden fixed inset-0 bg-slate-900/30 z-40"></div>
+
+<aside id="drawer"
+class="fixed top-0 right-0 h-full w-[380px] max-w-[90vw]
+bg-white z-50 shadow-2xl translate-x-full drawer">
+
+<div class="h-full flex flex-col">
+
+<div class="p-5 border-b border-slate-100">
+
+<div class="flex justify-between items-start">
+
+<div>
+<p class="text-[10px] text-cyan-600 font-bold uppercase tracking-widest">
+Detail Level
+</p>
+
+<h2 id="detail-title"
+class="text-xl font-bold mt-1">
+Pilih Level
+</h2>
+</div>
+
+<button id="close-detail"
+class="w-9 h-9 rounded-xl hover:bg-slate-100
+text-slate-400 text-xl">
+×
+</button>
+
+</div>
+
+<div class="grid grid-cols-2 gap-3 mt-5">
+
+<div class="bg-slate-50 rounded-xl p-3">
+<p class="text-[10px] text-slate-400">Pegawai</p>
+<b id="detail-total" class="text-lg">0</b>
+</div>
+
+<div class="bg-slate-50 rounded-xl p-3">
+<p class="text-[10px] text-slate-400">Rata-rata</p>
+<b id="detail-score" class="text-lg">0%</b>
+</div>
+
+</div>
+
+</div>
+
+<div id="detail-list"
+class="flex-1 overflow-auto p-3">
+
+<div class="text-center py-20 text-slate-400">
+<p class="text-3xl mb-3">◌</p>
+<p class="text-xs">
+Klik level pada grafik<br>
+untuk melihat pegawai
+</p>
+</div>
+
+</div>
+
+</div>
+</aside>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+let chartLevel,chartTren,pegawai=[];
+const warna=['#06B6D4','#2563EB','#10B981','#F59E0B','#8B5CF6','#EF4444'];
+const $=id=>document.getElementById(id);
+
+
+/* STAT */
+async function loadStats(){
+try{
+const r=await fetch('/hcr-skor-gabungan-json');
+const {data}=await r.json(),n=data.length;
+
+const avg=n
+?(data.reduce((a,b)=>a+Number(b.skorGabungan),0)/n).toFixed(1)
+:0;
+
+const unggul=data.filter(x=>x.kategori==='Tinggi').length;
+const v=document.querySelectorAll('.stat-value');
+
+v[0].textContent=n;
+v[2].textContent=avg+'%';
+v[3].textContent=unggul;
+
+}catch(e){console.error(e)}
+}
+
+
+/* LEVEL */
+async function loadLevel(){
+
+const bulan=$('filter-bulan').value;
+const tahun=$('filter-tahun').value;
+
+try{
+
+const r=await fetch(
+`/hcr-skor-gabungan-json?bulan=${bulan}&tahun=${tahun}`
+);
+
+const {data}=await r.json();
+pegawai=data;
+
+const count={};
+
+data.forEach(x=>{
+const l=x.level||'Tanpa Level';
+count[l]=(count[l]||0)+1;
+});
+
+const labels=Object.keys(count);
+const values=labels.map(x=>count[x]);
+
+$('totalChart').textContent=data.length;
+
+if(chartLevel)chartLevel.destroy();
+
+chartLevel=new Chart($('chartLevel'),{
+
+type:'doughnut',
+
+data:{
+labels,
+datasets:[{
+data:values,
+backgroundColor:labels.map((_,i)=>warna[i%warna.length]),
+borderColor:'#fff',
+borderWidth:4,
+hoverOffset:8
+}]
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false,
+cutout:'72%',
+
+plugins:{
+legend:{
+position:'bottom',
+labels:{
+usePointStyle:true,
+padding:15,
+font:{size:11}
+}
+},
+
+tooltip:{
+callbacks:{
+label:c=>{
+const t=c.dataset.data.reduce((a,b)=>a+b,0);
+return ` ${c.label}: ${c.raw} pegawai (${(c.raw/t*100).toFixed(1)}%)`;
+}
+}
+}
+},
+
+onClick:(e,items)=>{
+if(items.length)showDetail(labels[items[0].index]);
+}
+
+}
+
+});
+
+
+/* SUMMARY */
+$('ringkasan-level').innerHTML=labels.map((l,i)=>{
+
+const persen=(count[l]/data.length*100).toFixed(0);
+
+return `
+<button onclick="showDetail('${l.replace(/'/g,"\\'") }')"
+class="w-full text-left p-3 rounded-xl hover:bg-slate-50
+transition">
+
+<div class="flex justify-between mb-2">
+<span class="text-xs font-semibold">${l}</span>
+<span class="text-[10px] text-slate-400">
+${count[l]} pegawai
+</span>
+</div>
+
+<div class="progress">
+<div class="bar"
+style="width:${persen}%;background:${warna[i%warna.length]}">
+</div>
+</div>
+
+<p class="text-[10px] text-slate-400 mt-1">
+${persen}% dari total
+</p>
+
+</button>
+`;
+
+}).join('');
+
+}catch(e){
+
+console.error(e);
+
+$('ringkasan-level').innerHTML=
+'<p class="text-xs text-red-400">Gagal memuat data.</p>';
+
+}
+
+}
+
+
+/* DETAIL DRAWER */
+function showDetail(level){
+
+const list=pegawai.filter(
+x=>(x.level||'Tanpa Level')===level
+);
+
+const avg=list.length
+?(list.reduce((a,b)=>a+Number(b.skorGabungan),0)/list.length).toFixed(1)
+:0;
+
+$('detail-title').textContent=level;
+$('detail-total').textContent=list.length;
+$('detail-score').textContent=avg+'%';
+
+const bulan=$('filter-bulan').value;
+const tahun=$('filter-tahun').value;
+
+$('detail-list').innerHTML=list.map(p=>`
+
+<a href="/hcr-input-gabungan/${p.id}?bulan=${bulan}&tahun=${tahun}"
+class="flex items-center gap-3 p-3 rounded-xl
+hover:bg-slate-50 transition">
+
+<div class="w-9 h-9 shrink-0 rounded-full
+bg-cyan-50 text-cyan-600 flex items-center
+justify-center text-xs font-bold">
+${(p.nama||'?').charAt(0).toUpperCase()}
+</div>
+
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold truncate">${p.nama}</p>
+<p class="text-[10px] text-slate-400">
+${p.level||'Tanpa Level'}
+</p>
+</div>
+
+<span class="px-2 py-1 rounded-lg text-[10px] font-bold
+${p.kategori==='Tinggi'
+?'bg-green-50 text-green-600'
+:p.kategori==='Sedang'
+?'bg-yellow-50 text-yellow-600'
+:'bg-red-50 text-red-600'}">
+${p.skorGabungan}%
+</span>
+
+</a>
+
+`).join('');
+
+$('drawer-bg').classList.remove('hidden');
+$('drawer').classList.remove('translate-x-full');
+}
+
+
+/* CLOSE DRAWER */
+function closeDrawer(){
+$('drawer').classList.add('translate-x-full');
+setTimeout(()=>$('drawer-bg').classList.add('hidden'),250);
+}
+
+$('close-detail').onclick=closeDrawer;
+$('drawer-bg').onclick=closeDrawer;
+
+
+/* TREND */
+async function loadTrend(tahun){
+
+try{
+
+const r=await fetch(`/hcr-tren-tahunan-json?tahun=${tahun}`);
+const {dataTren}=await r.json();
+
+if(chartTren)chartTren.destroy();
+
+chartTren=new Chart($('chartTren'),{
+
+type:'line',
+
+data:{
+labels:[
+'Jan','Feb','Mar','Apr','Mei','Jun',
+'Jul','Agu','Sep','Okt','Nov','Des'
+],
+
+datasets:[{
+data:dataTren,
+borderColor:'#06B6D4',
+backgroundColor:'rgba(6,182,212,.10)',
+fill:true,
+tension:.4,
+borderWidth:2.5,
+pointRadius:3,
+pointHoverRadius:6
+}]
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false,
+
+plugins:{
+legend:{display:false}
+},
+
+scales:{
+x:{grid:{display:false}},
+y:{
+beginAtZero:true,
+max:100,
+ticks:{callback:v=>v+'%'}
+}
+}
+
+}
+
+});
+
+}catch(e){console.error(e)}
+
+}
+
+
+/* FILTER */
+$('filter-bulan').onchange=loadLevel;
+$('filter-tahun').onchange=loadLevel;
+
+document.querySelectorAll('.tahun-btn').forEach(btn=>{
+
+btn.onclick=()=>{
+
+document.querySelectorAll('.tahun-btn').forEach(x=>{
+x.classList.remove('bg-white','shadow','text-slate-800');
+x.classList.add('text-slate-400');
+});
+
+btn.classList.add('bg-white','shadow','text-slate-800');
+btn.classList.remove('text-slate-400');
+
+loadTrend(btn.dataset.tahun);
+
+};
+
+});
+
+
+/* START */
+$('filter-bulan').value=new Date().getMonth()+1;
+
+loadStats();
+loadLevel();
+loadTrend(new Date().getFullYear());
+
+</script>
+
 </body>
 </html>
+```

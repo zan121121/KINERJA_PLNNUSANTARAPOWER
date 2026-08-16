@@ -20,6 +20,8 @@ const hcrPenugasanRoutes = require('./routes/hcrPenugasanRoutes');
 const hcrSertifikasiRoutes = require('./routes/hcrSertifikasiRoutes');
 const hcrHariPengembanganRoutes = require('./routes/hcrHariPengembanganRoutes');
 const hcrBobotRoutes = require('./routes/hcrBobotRoutes');
+const hcrLevelRoutes = require('./routes/hcrLevelRoutes');
+const hcrGabunganRoutes = require('./routes/hcrGabunganRoutes');
 
 
 const app = express();
@@ -77,6 +79,8 @@ app.use('/', hcrPenugasanRoutes);
 app.use('/', hcrSertifikasiRoutes);
 app.use('/', hcrHariPengembanganRoutes);
 app.use('/', hcrBobotRoutes);
+app.use('/', hcrLevelRoutes);
+app.use('/', hcrGabunganRoutes);
 
 
 app.get('/', (req, res) => {

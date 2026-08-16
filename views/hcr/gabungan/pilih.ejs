@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Input HCR Gabungan - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'Input HCR Gabungan' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <div class="flex justify-between items-end flex-wrap gap-3 mb-4">
+      <p class="text-sm text-gray-400">Pilih pegawai untuk mengisi seluruh 8 item HCR sekaligus dalam 1 halaman</p>
+      <form method="GET" class="flex items-end gap-2">
+        <select name="bulan" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue">
+          <% ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].forEach((nm, i) => { %>
+            <option value="<%= i+1 %>" <%= (i+1) === bulan ? 'selected' : '' %>><%= nm %></option>
+          <% }) %>
+        </select>
+        <input type="number" name="tahun" value="<%= tahun %>" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white w-24 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+        <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold">Tampilkan</button>
+      </form>
+    </div>
+
+    <div class="relative max-w-md mb-4">
+      <input type="text" id="search-pegawai" placeholder="Cari nama atau NIP pegawai..."
+        class="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+      </svg>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="daftar-pegawai">
+      <% pegawai.forEach(p => { %>
+        <a href="/hcr-input-gabungan/<%= p.id %>?bulan=<%= bulan %>&tahun=<%= tahun %>" 
+           class="baris-pegawai bg-white rounded-xl shadow-sm border border-gray-100 hover:border-brand-blue hover:shadow-md transition p-4"
+           data-nama="<%= p.nama.toLowerCase() %>" data-nip="<%= p.nip.toLowerCase() %>">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm shrink-0">
+              <%= p.nama.charAt(0).toUpperCase() %>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-gray-800 text-sm truncate"><%= p.nama %></p>
+              <p class="text-xs text-gray-400"><%= p.nip %></p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center pt-3 border-t border-gray-50">
+            <div class="flex items-center gap-1.5">
+              <div class="w-16 bg-gray-100 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full <%= p.jumlahTerisi === p.totalItem ? 'bg-green-500' : p.jumlahTerisi > 0 ? 'bg-amber-500' : 'bg-gray-300' %>"
+                     style="width: <%= (p.jumlahTerisi / p.totalItem) * 100 %>%"></div>
+              </div>
+              <span class="text-[11px] text-gray-400"><%= p.jumlahTerisi %>/<%= p.totalItem %></span>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-600">
+              <%= p.level %>
+            </span>
+          </div>
+        </a>
+      <% }) %>
+      <% if (pegawai.length === 0) { %>
+        <p class="text-gray-400 text-sm col-span-full">Belum ada data pegawai</p>
+      <% } %>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('search-pegawai').addEventListener('input', function() {
+      const kw = this.value.toLowerCase().trim();
+      document.querySelectorAll('.baris-pegawai').forEach(el => {
+        const cocok = el.getAttribute('data-nama').includes(kw) || el.getAttribute('data-nip').includes(kw);
+        el.style.display = cocok ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

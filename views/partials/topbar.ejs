@@ -1,21 +1,9 @@
-<header class="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-30">
+<header class="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 flex items-center px-6 z-30">
+
   <div>
-    <h1 class="text-lg font-bold text-gray-800"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Dashboard' %></h1>
+    <h1 class="text-lg font-bold text-gray-800">
+      <%= typeof pageTitle !== 'undefined' ? pageTitle : 'Dashboard' %>
+    </h1>
   </div>
 
-  <div class="flex items-center gap-4">
-    <div class="relative hidden md:block">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
-</svg>
-    </div>
-
-    <div class="flex items-center gap-2 pl-3 border-l border-gray-200">
-      <div class="w-9 h-9 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm">
-        <%= user.nama.charAt(0).toUpperCase() %>
-      </div>
-      <div class="hidden sm:block">
-  <p class="text-sm font-semibold text-gray-800 leading-tight"><%= user.nama %></p>
-</div>
-    </div>
-  </div>
 </header>

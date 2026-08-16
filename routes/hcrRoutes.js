@@ -10,5 +10,6 @@ router.get('/hcr-realisasi/input/:pegawaiId', hanyaRole('admin', 'input'), hcrCo
 router.post('/hcr-realisasi/input/:pegawaiId', hanyaRole('admin', 'input'), hcrController.simpanInput);
 
 router.get('/hcr-skor-gabungan-json', hanyaRole('admin', 'input', 'eksekutif'), hcrController.skorGabunganJson);
+router.get('/hcr-tren-tahunan-json', hanyaRole('admin', 'input', 'eksekutif'), hcrController.trenTahunanJson);
 
 module.exports = router;

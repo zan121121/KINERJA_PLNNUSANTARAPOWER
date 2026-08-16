@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Input HCR - <%= pegawai.nama %></title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'Input HCR Gabungan' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <a href="/hcr-input-gabungan" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-blue mb-4">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+      Pilih Pegawai Lain
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6 flex justify-between items-center flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold"><%= pegawai.nama.charAt(0).toUpperCase() %></div>
+        <div>
+          <p class="font-bold text-gray-800"><%= pegawai.nama %></p>
+          <p class="text-xs text-gray-400"><%= pegawai.nip %> · <%= pegawai.jabatan || '-' %></p>
+        </div>
+      </div>
+      <form method="GET" class="flex items-end gap-2">
+        <select name="bulan" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+          <% ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].forEach((nm,i) => { %>
+            <option value="<%= i+1 %>" <%= (i+1)===bulan?'selected':'' %>><%= nm %></option>
+          <% }) %>
+        </select>
+        <input type="number" name="tahun" value="<%= tahun %>" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 w-24">
+        <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold">Tampilkan</button>
+      </form>
+    </div>
+
+    <% if (successMsg && successMsg.length > 0) { %>
+      <div class="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"><%= successMsg %></div>
+    <% } %>
+
+    <div class="space-y-4">
+
+      <!-- 1. Assesmen -->
+      <details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" open>
+        <summary class="px-5 py-4 font-semibold text-gray-800 text-sm cursor-pointer flex justify-between items-center">
+          <span>1. MLI Assesmen Kompetensi</span>
+          <span class="text-xs font-normal text-gray-400"><%= assesmen ? 'Sudah diisi' : 'Belum diisi' %></span>
+        </summary>
+        <form action="/hcr-input-gabungan/simpan-assesmen" method="POST" class="px-5 pb-5 grid grid-cols-2 gap-3">
+          <input type="hidden" name="pegawai_id" value="<%= pegawai.id %>">
+          <input type="hidden" name="bulan" value="<%= bulan %>">
+          <input type="hidden" name="tahun" value="<%= tahun %>">
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Jenis Assesmen</label>
+            <input type="text" name="jenis_assesmen" required value="<%= assesmen ? assesmen.jenis_assesmen : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal</label>
+            <input type="date" name="tanggal_assesmen" value="<%= assesmen && assesmen.tanggal_assesmen ? assesmen.tanggal_assesmen.toISOString().split('T')[0] : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+            <select name="status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+              <option value="Belum" <%= assesmen && assesmen.status==='Belum'?'selected':'' %>>Belum</option>
+              <option value="Selesai" <%= assesmen && assesmen.status==='Selesai'?'selected':'' %>>Selesai</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Skor</label>
+            <input type="number" step="0.01" name="skor" value="<%= assesmen ? assesmen.skor : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="col-span-2 flex justify-end">
+            <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold">Simpan</button>
+          </div>
+        </form>
+      </details>
+
+      <!-- 2. Identifikasi PPK -->
+      <details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <summary class="px-5 py-4 font-semibold text-gray-800 text-sm cursor-pointer flex justify-between items-center">
+          <span>2. MLI Identifikasi PPK</span>
+          <span class="text-xs font-normal text-gray-400"><%= identifikasi ? 'Sudah diisi' : 'Belum diisi' %></span>
+        </summary>
+        <form action="/hcr-input-gabungan/simpan-identifikasi" method="POST" class="px-5 pb-5 grid grid-cols-2 gap-3">
+          <input type="hidden" name="pegawai_id" value="<%= pegawai.id %>">
+          <input type="hidden" name="bulan" value="<%= bulan %>">
+          <input type="hidden" name="tahun" value="<%= tahun %>">
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Kompetensi yang Dikembangkan</label>
+            <input type="text" name="kompetensi_dikembangkan" required value="<%= identifikasi ? identifikasi.kompetensi_dikembangkan : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Alasan/Potensi</label>
+            <textarea name="alasan_potensi" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"><%= identifikasi ? identifikasi.alasan_potensi : '' %></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+            <select name="status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+              <option value="Diusulkan" <%= identifikasi && identifikasi.status==='Diusulkan'?'selected':'' %>>Diusulkan</option>
+              <option value="Disetujui" <%= identifikasi && identifikasi.status==='Disetujui'?'selected':'' %>>Disetujui</option>
+              <option value="Ditolak" <%= identifikasi && identifikasi.status==='Ditolak'?'selected':'' %>>Ditolak</option>
+            </select>
+          </div>
+          <div class="col-span-2 flex justify-end">
+            <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold">Simpan</button>
+          </div>
+        </form>
+      </details>
+
+      <!-- 3. Pelaksanaan PPK -->
+      <details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <summary class="px-5 py-4 font-semibold text-gray-800 text-sm cursor-pointer flex justify-between items-center">
+          <span>3. MLI Pelaksanaan & Monitoring PPK</span>
+          <span class="text-xs font-normal text-gray-400"><%= pelaksanaan ? 'Sudah diisi' : 'Belum diisi' %></span>
+        </summary>
+        <form action="/hcr-input-gabungan/simpan-pelaksanaan" method="POST" class="px-5 pb-5 grid grid-cols-2 gap-3">
+          <input type="hidden" name="pegawai_id" value="<%= pegawai.id %>">
+          <input type="hidden" name="bulan" value="<%= bulan %>">
+          <input type="hidden" name="tahun" value="<%= tahun %>">
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Nama Kegiatan</label>
+            <input type="text" name="nama_kegiatan" required value="<%= pelaksanaan ? pelaksanaan.nama_kegiatan : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Jadwal Tanggal</label>
+            <input type="date" name="jadwal_tanggal" value="<%= pelaksanaan && pelaksanaan.jadwal_tanggal ? pelaksanaan.jadwal_tanggal.toISOString().split('T')[0] : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+            <select name="status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+              <option value="Terjadwal" <%= pelaksanaan && pelaksanaan.status==='Terjadwal'?'selected':'' %>>Terjadwal</option>
+              <option value="Berlangsung" <%= pelaksanaan && pelaksanaan.status==='Berlangsung'?'selected':'' %>>Berlangsung</option>
+              <option value="Selesai" <%= pelaksanaan && pelaksanaan.status==='Selesai'?'selected':'' %>>Selesai</option>
+              <option value="Terlambat" <%= pelaksanaan && pelaksanaan.status==='Terlambat'?'selected':'' %>>Terlambat</option>
+            </select>
+          </div>
+          <div class="col-span-2 flex justify-between items-center">
+            <% if (pelaksanaan) { %>
+              <a href="/hcr-pelaksanaan/detail/<%= pelaksanaan.id %>" class="text-xs text-blue-600 hover:underline">Kelola Log Aktivitas →</a>
+            <% } else { %><span></span><% } %>
+            <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold">Simpan</button>
+          </div>
+        </form>
+      </details>
+
+      <!-- 4. Evaluasi PPK -->
+      <details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <summary class="px-5 py-4 font-semibold text-gray-800 text-sm cursor-pointer flex justify-between items-center">
+          <span>4. MLI Evaluasi PPK</span>
+          <span class="text-xs font-normal text-gray-400"><%= evaluasi ? 'Sudah diisi' : 'Belum diisi' %></span>
+        </summary>
+        <form action="/hcr-input-gabungan/simpan-evaluasi" method="POST" enctype="multipart/form-data" class="px-5 pb-5 grid grid-cols-2 gap-3">
+          <input type="hidden" name="pegawai_id" value="<%= pegawai.id %>">
+          <input type="hidden" name="bulan" value="<%= bulan %>">
+          <input type="hidden" name="tahun" value="<%= tahun %>">
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Nama Program</label>
+            <input type="text" name="nama_program" required value="<%= evaluasi ? evaluasi.nama_program : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal Evaluasi</label>
+            <input type="date" name="tanggal_evaluasi" value="<%= evaluasi && evaluasi.tanggal_evaluasi ? evaluasi.tanggal_evaluasi.toISOString().split('T')[0] : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Skor (0-100)</label>
+            <input type="number" step="0.01" name="skor_evaluasi" required value="<%= evaluasi ? evaluasi.skor_evaluasi : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Bukti Dukung <%= evaluasi && evaluasi.file_bukti ? '(sudah ada, upload untuk ganti)' : '' %></label>
+            <input type="file" name="file_bukti" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="col-span-2 flex justify-end">
+            <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold">Simpan</button>
+          </div>
+        </form>
+      </details>
+
+      <!-- 5. AKSI -->
+      <details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <summary class="px-5 py-4 font-semibold text-gray-800 text-sm cursor-pointer flex justify-between items-center">
+          <span>5. MLI AKSI</span>
+          <span class="text-xs font-normal text-gray-400"><%= aksi.length %> aksi tercatat</span>
+        </summary>
+        <div class="px-5 pb-5">
+          <% aksi.forEach(a => { %>
+            <div class="flex justify-between items-center text-sm py-2 border-b border-gray-50">
+              <span class="text-gray-700"><%= a.nama_aksi %></span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-semibold <%= a.status==='Selesai'?'bg-green-50 text-green-700':a.status==='Proses'?'bg-amber-50 text-amber-700':'bg-gray-100 text-gray-500' %>"><%= a.status %></span>
+            </div>
+          <% }) %>
+          <form action="/hcr-input-gabungan/simpan-aksi" method="POST" class="grid grid-cols-2 gap-3 mt-3">
+            <input type="hidden" name="pegawai_id" value="<%= pegawai.id %>">
+            <input type="hidden" name="bulan" value="<%= bulan %>">
+            <input type="hidden" name="tahun" value="<%= tahun %>">
+            <input type="text" name="nama_aksi" required placeholder="Nama aksi baru..." class="col-span-2 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <input type="date" name="target_selesai" class="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <select name="status" class="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+              <option value="Belum">Belum</option>
+              <option value="Proses">Proses</option>
+              <option value="Selesai">Selesai</option>
+            </select>
+            <div class="col-span-2 flex justify-end">
+              <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold">Tambah Aksi</button>
+            </div>
+          </form>
+        </div>
+      </details>
+
+      <!-- 6. Penugasan -->
+      <details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <summary class="px-5 py-4 font-semibold text-gray-800 text-sm cursor-pointer flex justify-between items-center">
+          <span>6. KPI Penugasan</span>
+          <span class="text-xs font-normal text-gray-400"><%= penugasan ? 'Sudah diisi' : 'Belum diisi' %></span>
+        </summary>
+        <form action="/hcr-input-gabungan/simpan-penugasan" method="POST" class="px-5 pb-5 grid grid-cols-2 gap-3">
+          <input type="hidden" name="pegawai_id" value="<%= pegawai.id %>">
+          <input type="hidden" name="bulan" value="<%= bulan %>">
+          <input type="hidden" name="tahun" value="<%= tahun %>">
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Nama Penugasan</label>
+            <input type="text" name="nama_penugasan" required value="<%= penugasan ? penugasan.nama_penugasan : '' %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Target</label>
+            <input type="number" step="0.01" name="target" value="<%= penugasan ? penugasan.target : 100 %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Realisasi</label>
+            <input type="number" step="0.01" name="realisasi" value="<%= penugasan ? penugasan.realisasi : 0 %>" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="col-span-2 flex justify-end">
+            <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold">Simpan</button>
+          </div>
+        </form>
+      </details>
+
+      <!-- 7. Sertifikasi -->
+      <details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <summary class="px-5 py-4 font-semibold text-gray-800 text-sm cursor-pointer flex justify-between items-center">
+          <span>7. KPI Sertifikasi Kompetensi</span>
+          <span class="text-xs font-normal text-gray-400"><%= sertifikasi.length %> sertifikat</span>
+        </summary>
+        <div class="px-5 pb-5">
+          <% sertifikasi.forEach(s => { %>
+            <div class="text-sm py-2 border-b border-gray-50 text-gray-700"><%= s.nama_sertifikasi %></div>
+          <% }) %>
+          <form action="/hcr-input-gabungan/simpan-sertifikasi" method="POST" class="grid grid-cols-2 gap-3 mt-3">
+            <input type="hidden" name="pegawai_id" value="<%= pegawai.id %>">
+            <input type="hidden" name="bulan" value="<%= bulan %>">
+            <input type="hidden" name="tahun" value="<%= tahun %>">
+            <input type="text" name="nama_sertifikasi" required placeholder="Nama sertifikasi baru..." class="col-span-2 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <input type="date" name="tanggal_lulus" class="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <input type="date" name="masa_berlaku" placeholder="Masa berlaku" class="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <div class="col-span-2 flex justify-end">
+              <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold">Tambah Sertifikasi</button>
+            </div>
+          </form>
+        </div>
+      </details>
+
+      <!-- 8. Hari Pengembangan -->
+      <details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <summary class="px-5 py-4 font-semibold text-gray-800 text-sm cursor-pointer flex justify-between items-center">
+          <span>8. KPI Jml Hari Orang Pengembangan</span>
+          <span class="text-xs font-normal text-gray-400"><%= hariPengembangan.length %> pelatihan</span>
+        </summary>
+        <div class="px-5 pb-5">
+          <% hariPengembangan.forEach(h => { %>
+            <div class="flex justify-between text-sm py-2 border-b border-gray-50">
+              <span class="text-gray-700"><%= h.nama_pelatihan %></span>
+              <span class="text-gray-500"><%= h.jumlah_hari %> hari</span>
+            </div>
+          <% }) %>
+          <form action="/hcr-input-gabungan/simpan-hari-pengembangan" method="POST" class="grid grid-cols-2 gap-3 mt-3">
+            <input type="hidden" name="pegawai_id" value="<%= pegawai.id %>">
+            <input type="hidden" name="bulan" value="<%= bulan %>">
+            <input type="hidden" name="tahun" value="<%= tahun %>">
+            <input type="text" name="nama_pelatihan" required placeholder="Nama pelatihan baru..." class="col-span-2 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <input type="date" name="tanggal" class="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <input type="number" step="0.5" name="jumlah_hari" value="1" placeholder="Jml hari" class="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <div class="col-span-2 flex justify-end">
+              <button type="submit" class="bg-brand-blue text-white px-5 py-2 rounded-lg text-sm font-semibold">Tambah Pelatihan</button>
+            </div>
+          </form>
+        </div>
+      </details>
+
+    </div>
+  </main>
+</body>
+</html>
