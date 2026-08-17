@@ -178,3 +178,33 @@ exports.trenTahunanJson = async (req, res) => {
 
   res.json({ tahun, dataTren });
 };
+// Detail status pengisian 8 item HCR untuk 1 pegawai di 1 periode
+exports.detailItemJson = async (req, res) => {
+  const pegawaiId = req.params.pegawaiId;
+  const bulan = parseInt(req.query.bulan) || new Date().getMonth() + 1;
+  const tahun = parseInt(req.query.tahun) || new Date().getFullYear();
+
+  const [items] = await db.query(
+    `SELECT hcr_items.kode, hcr_items.nama_item, hcr_items.tipe,
+            hcr_realisasi.skor, hcr_realisasi.updated_at
+     FROM hcr_items
+     LEFT JOIN hcr_realisasi 
+       ON hcr_realisasi.hcr_item_id = hcr_items.id 
+       AND hcr_realisasi.pegawai_id = ?
+       AND hcr_realisasi.periode_bulan = ?
+       AND hcr_realisasi.periode_tahun = ?
+     ORDER BY hcr_items.id ASC`,
+    [pegawaiId, bulan, tahun]
+  );
+
+  const hasil = items.map(it => ({
+    kode: it.kode,
+    nama_item: it.nama_item,
+    tipe: it.tipe,
+    terisi: it.skor !== null,
+    skor: it.skor !== null ? parseFloat(it.skor).toFixed(1) : null,
+    tanggalUpdate: it.updated_at
+  }));
+
+  res.json({ bulan, tahun, items: hasil });
+};
