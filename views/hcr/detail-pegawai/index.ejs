@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Detail Pegawai HCR - e-Kinerja HC</title>
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+  <%- include('../../partials/sidebar') %>
+  <%- include('../../partials/topbar', { pageTitle: 'Detail Pegawai' }) %>
+
+  <main class="ml-64 pt-16 p-6">
+    <div class="flex justify-between items-end flex-wrap gap-3 mb-5">
+      <p class="text-sm text-gray-400">Daftar pegawai dikelompokkan berdasarkan level HCR. Klik nama untuk melihat spesifikasi lengkap.</p>
+      <form method="GET" class="flex items-end gap-2" id="form-filter">
+        <select id="filter-bulan" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue">
+          <% ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].forEach((nm, i) => { %>
+            <option value="<%= i+1 %>"><%= nm %></option>
+          <% }) %>
+        </select>
+        <input type="number" id="filter-tahun" value="<%= new Date().getFullYear() %>" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white w-24 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+      </form>
+    </div>
+
+    <div id="daftar-level" class="space-y-4">
+      <p class="text-gray-400 text-sm">Memuat data...</p>
+    </div>
+  </main>
+
+  <!-- Modal spesifikasi lengkap -->
+  <div id="modal-profil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-lg max-w-lg w-full max-h-[85vh] overflow-y-auto relative">
+      <div class="sticky top-0 bg-brand-navy px-6 py-4 flex justify-between items-start rounded-t-xl">
+        <div>
+          <p id="modal-nama" class="text-white font-bold text-base">-</p>
+          <p id="modal-jabatan" class="text-white/50 text-xs mt-0.5">-</p>
+        </div>
+        <button onclick="tutupModalProfil()" class="text-white/60 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+
+      <div class="p-6">
+        <!-- Data diri -->
+        <div class="grid grid-cols-2 gap-3 mb-5 text-sm">
+          <div><p class="text-xs text-gray-400">NIP</p><p id="modal-nip" class="font-medium text-gray-700">-</p></div>
+          <div><p class="text-xs text-gray-400">Jenis Kelamin</p><p id="modal-jk" class="font-medium text-gray-700">-</p></div>
+          <div><p class="text-xs text-gray-400">Tempat Lahir</p><p id="modal-tempat" class="font-medium text-gray-700">-</p></div>
+          <div><p class="text-xs text-gray-400">Tanggal Lahir</p><p id="modal-tgl" class="font-medium text-gray-700">-</p></div>
+        </div>
+
+        <!-- Skor & Level -->
+        <div class="bg-gray-50 rounded-xl p-4 mb-5 flex justify-between items-center">
+          <div>
+            <p class="text-xs text-gray-400">Skor Gabungan HCR</p>
+            <p id="modal-skor" class="text-2xl font-bold text-gray-800">-</p>
+          </div>
+          <div class="text-right">
+            <span id="modal-level" class="inline-block px-3 py-1 rounded-full text-sm font-bold bg-blue-50 text-blue-600 mb-1">-</span>
+            <p id="modal-kategori" class="text-xs text-gray-400">-</p>
+          </div>
+        </div>
+
+        <!-- Breakdown 8 item -->
+        <p class="text-sm font-bold text-gray-800 mb-2">Rincian 8 Item HCR</p>
+        <div id="modal-items" class="space-y-1.5">
+          <p class="text-gray-400 text-xs">Memuat...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let dataAllPegawai = [];
+
+    async function muatDaftarLevel() {
+      const bulan = document.getElementById('filter-bulan').value;
+      const tahun = document.getElementById('filter-tahun').value;
+      const wrapper = document.getElementById('daftar-level');
+
+      try {
+        const res = await fetch(`/hcr-skor-gabungan-json?bulan=${bulan}&tahun=${tahun}`);
+        const { data } = await res.json();
+        dataAllPegawai = data;
+
+        if (data.length === 0) {
+          wrapper.innerHTML = '<p class="text-gray-400 text-sm">Belum ada data pegawai</p>';
+          return;
+        }
+
+        const grup = {};
+        data.forEach(p => {
+          if (!grup[p.level]) grup[p.level] = [];
+          grup[p.level].push(p);
+        });
+
+        const urutLevel = Object.keys(grup).sort((a, b) => {
+          const angka = s => parseFloat(s.replace('Level ', '')) || 0;
+          return angka(a) - angka(b);
+        });
+
+        wrapper.innerHTML = urutLevel.map(lvl => {
+          const daftar = grup[lvl];
+          return `
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div class="px-5 py-3 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                <p class="font-semibold text-gray-800 text-sm">${lvl}</p>
+                <span class="text-xs text-gray-400">${daftar.length} pegawai</span>
+              </div>
+              <div class="divide-y divide-gray-50">
+                ${daftar.map(p => {
+                  const warna = p.kategori === 'Tinggi' ? 'text-green-600' : p.kategori === 'Sedang' ? 'text-amber-600' : 'text-red-600';
+                  return `
+                    <button onclick="tampilProfil(${p.id})" class="w-full flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition text-left">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-xs shrink-0">${p.nama.charAt(0).toUpperCase()}</div>
+                        <p class="text-sm font-medium text-gray-700">${p.nama}</p>
+                      </div>
+                      <span class="text-xs font-semibold ${warna}">${p.skorGabungan}%</span>
+                    </button>`;
+                }).join('')}
+              </div>
+            </div>`;
+        }).join('');
+
+      } catch (err) {
+        wrapper.innerHTML = '<p class="text-red-400 text-sm">Gagal memuat data</p>';
+      }
+    }
+
+    async function tampilProfil(pegawaiId) {
+      const bulan = document.getElementById('filter-bulan').value;
+      const tahun = document.getElementById('filter-tahun').value;
+
+      document.getElementById('modal-profil').classList.remove('hidden');
+      document.getElementById('modal-items').innerHTML = '<p class="text-gray-400 text-xs">Memuat...</p>';
+
+      try {
+        const res = await fetch(`/hcr-detail-pegawai/profil/${pegawaiId}?bulan=${bulan}&tahun=${tahun}`);
+        const data = await res.json();
+
+        document.getElementById('modal-nama').textContent = data.pegawai.nama;
+        document.getElementById('modal-jabatan').textContent = data.pegawai.jabatan || '-';
+        document.getElementById('modal-nip').textContent = data.pegawai.nip;
+        document.getElementById('modal-jk').textContent = data.pegawai.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
+        document.getElementById('modal-tempat').textContent = data.pegawai.tempat_lahir || '-';
+        document.getElementById('modal-tgl').textContent = data.pegawai.tanggal_lahir
+          ? new Date(data.pegawai.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+          : '-';
+
+        document.getElementById('modal-skor').textContent = data.skorGabungan + '%';
+        document.getElementById('modal-level').textContent = data.level;
+        document.getElementById('modal-kategori').textContent = data.kategori;
+
+        document.getElementById('modal-items').innerHTML = data.items.map((it, i) => {
+          const tanggal = it.tanggalUpdate ? new Date(it.tanggalUpdate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+          return `
+            <div class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border ${it.terisi ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}">
+              <div class="w-5 h-5 rounded-full ${it.terisi ? 'bg-green-500' : 'bg-gray-300'} text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                ${it.terisi ? '✓' : (i+1)}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex justify-between items-start">
+                  <p class="text-xs font-medium text-gray-700 leading-snug">${it.nama_item}</p>
+                  <span class="text-[10px] text-gray-400 shrink-0 ml-2">Bobot ${it.bobot}%</span>
+                </div>
+                ${it.terisi
+                  ? `<p class="text-[10px] text-gray-400 mt-0.5">Skor ${it.skor}% · diisi ${tanggal}</p>`
+                  : `<p class="text-[10px] text-gray-400 mt-0.5">Belum diisi</p>`}
+              </div>
+            </div>`;
+        }).join('');
+      } catch (err) {
+        document.getElementById('modal-items').innerHTML = '<p class="text-red-400 text-xs">Gagal memuat profil</p>';
+      }
+    }
+
+    function tutupModalProfil() {
+      document.getElementById('modal-profil').classList.add('hidden');
+    }
+    document.getElementById('modal-profil').addEventListener('click', (e) => {
+      if (e.target.id === 'modal-profil') tutupModalProfil();
+    });
+
+document.getElementById('filter-bulan').value = new Date().getMonth() + 1;
+document.getElementById('filter-bulan').addEventListener('change', muatDaftarLevel);
+document.getElementById('filter-tahun').addEventListener('change', muatDaftarLevel);
+
+// Cek kalau ada parameter dari dashboard (?pegawai=ID&bulan=X&tahun=Y) -> auto-buka modal
+const urlParams = new URLSearchParams(window.location.search);
+const pegawaiDariUrl = urlParams.get('pegawai');
+const bulanDariUrl = urlParams.get('bulan');
+const tahunDariUrl = urlParams.get('tahun');
+
+if (bulanDariUrl) document.getElementById('filter-bulan').value = bulanDariUrl;
+if (tahunDariUrl) document.getElementById('filter-tahun').value = tahunDariUrl;
+
+muatDaftarLevel().then(() => {
+  if (pegawaiDariUrl) {
+    tampilProfil(pegawaiDariUrl);
+  }
+});
+  </script>
+</body>
+</html>

@@ -7,7 +7,7 @@
 </head>
 <body class="bg-gray-50">
   <%- include('../../partials/sidebar') %>
-  <%- include('../../partials/topbar', { pageTitle: 'Input HCR Gabungan' }) %>
+  <%- include('../../partials/topbar', { pageTitle: 'Input HCR' }) %>
 
   <main class="ml-64 pt-16 p-6">
     <div class="flex justify-between items-end flex-wrap gap-3 mb-4">
@@ -23,20 +23,6 @@
       </form>
     </div>
 
-    <!-- Panel detail HCR (nempel di bawah header, muncul saat ikon info diklik) -->
-    <div id="panel-detail" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
-      <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-brand-navy">
-        <div>
-          <p id="panel-nama" class="text-white font-semibold text-sm">-</p>
-          <p id="panel-periode" class="text-white/50 text-xs">-</p>
-        </div>
-        <button onclick="tutupPanelDetail()" class="text-white/60 hover:text-white text-xl leading-none">&times;</button>
-      </div>
-      <div id="panel-list" class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-        <p class="text-gray-400 text-xs text-center py-4 col-span-full">Memuat...</p>
-      </div>
-    </div>
-
     <div class="relative max-w-md mb-4">
       <input type="text" id="search-pegawai" placeholder="Cari nama atau NIP pegawai..."
         class="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue">
@@ -47,19 +33,18 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="daftar-pegawai">
       <% pegawai.forEach(p => { %>
-        <div class="baris-pegawai bg-white rounded-xl shadow-sm border border-gray-100 hover:border-brand-blue hover:shadow-md transition p-4 relative"
-             data-nama="<%= p.nama.toLowerCase() %>" data-nip="<%= p.nip.toLowerCase() %>">
-          <a href="/hcr-input-gabungan/<%= p.id %>?bulan=<%= bulan %>&tahun=<%= tahun %>" class="block">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm shrink-0">
-                <%= p.nama.charAt(0).toUpperCase() %>
-              </div>
-              <div class="min-w-0">
-                <p class="font-semibold text-gray-800 text-sm truncate"><%= p.nama %></p>
-                <p class="text-xs text-gray-400"><%= p.nip %></p>
-              </div>
+        <a href="/hcr-input-gabungan/<%= p.id %>?bulan=<%= bulan %>&tahun=<%= tahun %>" 
+           class="baris-pegawai bg-white rounded-xl shadow-sm border border-gray-100 hover:border-brand-blue hover:shadow-md transition p-4"
+           data-nama="<%= p.nama.toLowerCase() %>" data-nip="<%= p.nip.toLowerCase() %>">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-sm shrink-0">
+              <%= p.nama.charAt(0).toUpperCase() %>
             </div>
-          </a>
+            <div class="min-w-0">
+              <p class="font-semibold text-gray-800 text-sm truncate"><%= p.nama %></p>
+              <p class="text-xs text-gray-400"><%= p.nip %></p>
+            </div>
+          </div>
           <div class="flex justify-between items-center pt-3 border-t border-gray-50">
             <div class="flex items-center gap-1.5">
               <div class="w-16 bg-gray-100 rounded-full h-1.5">
@@ -68,17 +53,9 @@
               </div>
               <span class="text-[11px] text-gray-400"><%= p.jumlahTerisi %>/<%= p.totalItem %></span>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-600"><%= p.level %></span>
-              <button type="button" onclick="tampilDetail(event, <%= p.id %>, '<%= p.nama.replace(/'/g, "\\'") %>')"
-                class="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 shrink-0">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-600"><%= p.level %></span>
           </div>
-        </div>
+        </a>
       <% }) %>
       <% if (pegawai.length === 0) { %>
         <p class="text-gray-400 text-sm col-span-full">Belum ada data pegawai</p>
@@ -94,50 +71,6 @@
         el.style.display = cocok ? '' : 'none';
       });
     });
-
-    async function tampilDetail(event, pegawaiId, nama) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      const bulan = <%= bulan %>;
-      const tahun = <%= tahun %>;
-      const namaBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-
-      document.getElementById('panel-nama').textContent = nama;
-      document.getElementById('panel-periode').textContent = `Periode ${namaBulan[bulan-1]} ${tahun}`;
-      document.getElementById('panel-list').innerHTML = '<p class="text-gray-400 text-xs text-center py-4 col-span-full">Memuat...</p>';
-      document.getElementById('panel-detail').classList.remove('hidden');
-
-      // Auto-scroll ke panel biar keliatan (kalau posisi user udah scroll ke bawah)
-      document.getElementById('panel-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-      try {
-        const res = await fetch(`/hcr-detail-item/${pegawaiId}?bulan=${bulan}&tahun=${tahun}`);
-        const { items } = await res.json();
-
-        document.getElementById('panel-list').innerHTML = items.map((it, i) => {
-          const tanggal = it.tanggalUpdate ? new Date(it.tanggalUpdate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
-          return `
-            <div class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border ${it.terisi ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}">
-              <div class="w-5 h-5 rounded-full ${it.terisi ? 'bg-green-500' : 'bg-gray-300'} text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                ${it.terisi ? '✓' : (i+1)}
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-xs font-medium text-gray-700 leading-snug">${it.nama_item}</p>
-                ${it.terisi
-                  ? `<p class="text-[10px] text-gray-400 mt-0.5">Skor ${it.skor}% · ${tanggal}</p>`
-                  : `<p class="text-[10px] text-gray-400 mt-0.5">Belum diisi</p>`}
-              </div>
-            </div>`;
-        }).join('');
-      } catch (err) {
-        document.getElementById('panel-list').innerHTML = '<p class="text-red-400 text-xs text-center py-4 col-span-full">Gagal memuat detail</p>';
-      }
-    }
-
-    function tutupPanelDetail() {
-      document.getElementById('panel-detail').classList.add('hidden');
-    }
   </script>
 </body>
 </html>

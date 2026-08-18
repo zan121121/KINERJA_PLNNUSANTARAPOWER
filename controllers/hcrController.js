@@ -96,8 +96,8 @@ exports.skorGabunganJson = async (req, res) => {
 
   const [levelRows] = await db.query('SELECT * FROM hcr_level_config ORDER BY urutan ASC');
 
-  const [pegawai] = await db.query('SELECT id, nama FROM pegawai ORDER BY nama ASC');
-  const [realisasi] = await db.query(
+const [pegawai] = await db.query('SELECT id, nip, nama FROM pegawai ORDER BY nama ASC');
+const [realisasi] = await db.query(
     'SELECT pegawai_id, hcr_item_id, skor FROM hcr_realisasi WHERE periode_bulan = ? AND periode_tahun = ?',
     [bulan, tahun]
   );
@@ -125,13 +125,14 @@ exports.skorGabunganJson = async (req, res) => {
     if (totalSkor >= 85) kategori = 'Tinggi';
     else if (totalSkor >= 60) kategori = 'Sedang';
 
-    return {
-      id: p.id,
-      nama: p.nama,
-      skorGabungan: totalSkor.toFixed(1),
-      kategori,
-      level: cariLevel(totalSkor)
-    };
+return {
+  id: p.id,
+  nip: p.nip,
+  nama: p.nama,
+  skorGabungan: totalSkor.toFixed(1),
+  kategori,
+  level: cariLevel(totalSkor)
+};
   });
 
   res.json({ bulan, tahun, data: hasil });
@@ -207,4 +208,79 @@ exports.detailItemJson = async (req, res) => {
   }));
 
   res.json({ bulan, tahun, items: hasil });
+};
+// Halaman Detail Pegawai (dikelompokkan per level)
+exports.detailPegawaiIndex = (req, res) => {
+  res.render('hcr/detail-pegawai/index');
+};
+
+// Profil lengkap 1 pegawai (read-only): data diri + skor gabungan + level + breakdown 8 item
+exports.profilLengkapJson = async (req, res) => {
+  const pegawaiId = req.params.pegawaiId;
+  const bulan = parseInt(req.query.bulan) || new Date().getMonth() + 1;
+  const tahun = parseInt(req.query.tahun) || new Date().getFullYear();
+
+  const [pegawaiRows] = await db.query('SELECT * FROM pegawai WHERE id = ?', [pegawaiId]);
+  if (pegawaiRows.length === 0) {
+    return res.status(404).json({ error: 'Pegawai tidak ditemukan' });
+  }
+  const pegawai = pegawaiRows[0];
+
+  const [bobotRows] = await db.query('SELECT hcr_item_id, bobot_persen FROM hcr_bobot');
+  const bobotMap = {};
+  bobotRows.forEach(b => { bobotMap[b.hcr_item_id] = parseFloat(b.bobot_persen); });
+
+  const [levelRows] = await db.query('SELECT * FROM hcr_level_config ORDER BY urutan ASC');
+  function cariLevel(skor) {
+    const match = levelRows.find(l => skor >= parseFloat(l.min_skor) && skor <= parseFloat(l.max_skor));
+    return match ? match.level_label : '-';
+  }
+
+  const [items] = await db.query(
+    `SELECT hcr_items.id AS item_id, hcr_items.kode, hcr_items.nama_item, hcr_items.tipe,
+            hcr_realisasi.skor, hcr_realisasi.updated_at
+     FROM hcr_items
+     LEFT JOIN hcr_realisasi 
+       ON hcr_realisasi.hcr_item_id = hcr_items.id 
+       AND hcr_realisasi.pegawai_id = ?
+       AND hcr_realisasi.periode_bulan = ?
+       AND hcr_realisasi.periode_tahun = ?
+     ORDER BY hcr_items.id ASC`,
+    [pegawaiId, bulan, tahun]
+  );
+
+  let totalSkor = 0;
+  const itemHasil = items.map(it => {
+    const skor = it.skor !== null ? parseFloat(it.skor) : 0;
+    const bobot = bobotMap[it.item_id] || 0;
+    totalSkor += (skor * bobot / 100);
+    return {
+      nama_item: it.nama_item,
+      tipe: it.tipe,
+      terisi: it.skor !== null,
+      skor: it.skor !== null ? skor.toFixed(1) : null,
+      bobot: bobot,
+      tanggalUpdate: it.updated_at
+    };
+  });
+
+  let kategori = 'Rendah';
+  if (totalSkor >= 85) kategori = 'Tinggi';
+  else if (totalSkor >= 60) kategori = 'Sedang';
+
+  res.json({
+    pegawai: {
+      nip: pegawai.nip,
+      nama: pegawai.nama,
+      jabatan: pegawai.jabatan,
+      jenis_kelamin: pegawai.jenis_kelamin,
+      tempat_lahir: pegawai.tempat_lahir,
+      tanggal_lahir: pegawai.tanggal_lahir
+    },
+    bulan, tahun,
+    skorGabungan: totalSkor.toFixed(1),
+    level: cariLevel(totalSkor),
+    kategori,
+    items: itemHasil
+  });
 };

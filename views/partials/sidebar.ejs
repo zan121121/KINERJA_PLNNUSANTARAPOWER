@@ -68,16 +68,13 @@
         </svg>
       </button>
 
-      <div id="submenu-hcr" class="<%= isActive('/hcr') ? '' : 'hidden' %> pl-4 mt-1 space-y-1">
-        <a href="/hcr-input-gabungan" class="block px-3 py-2 rounded-lg text-xs font-medium transition <%= currentPath === '/hcr-input-gabungan' ? 'bg-white/10 text-white font-semibold' : 'text-white/50 hover:bg-white/10 hover:text-white' %>">
-          Pilih Pegawai
-        </a>
-        <a href="/hcr-bobot" class="block px-3 py-2 rounded-lg text-xs font-medium transition <%= isActive('/hcr-bobot') ? 'bg-white/10 text-white font-semibold' : 'text-white/50 hover:bg-white/10 hover:text-white' %>">
-          Atur Bobot HCR
-        </a>
-        <a href="/hcr-level" class="block px-3 py-2 rounded-lg text-xs font-medium transition <%= isActive('/hcr-level') ? 'bg-white/10 text-white font-semibold' : 'text-white/50 hover:bg-white/10 hover:text-white' %>">
-          Atur Level HCR
-        </a>
+<div id="submenu-hcr" class="<%= isActive('/hcr') ? '' : 'hidden' %> pl-4 mt-1 space-y-1">
+  <a href="/hcr-input-gabungan" class="block px-3 py-2 rounded-lg text-xs font-medium transition <%= currentPath === '/hcr-input-gabungan' ? 'bg-white/10 text-white font-semibold' : 'text-white/50 hover:bg-white/10 hover:text-white' %>">
+    Input HCR
+  </a>
+  <a href="/hcr-detail-pegawai" class="block px-3 py-2 rounded-lg text-xs font-medium transition <%= currentPath === '/hcr-detail-pegawai' ? 'bg-white/10 text-white font-semibold' : 'text-white/50 hover:bg-white/10 hover:text-white' %>">
+    Detail Pegawai
+  </a>
       </div>
     </div>
   </nav>

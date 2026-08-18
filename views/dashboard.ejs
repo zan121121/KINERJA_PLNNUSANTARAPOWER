@@ -664,7 +664,7 @@ const tahun=$('filter-tahun').value;
 
 $('detail-list').innerHTML=list.length?list.map(p=>`
 
-<a href="/hcr-input-gabungan/${p.id}?bulan=${bulan}&tahun=${tahun}"
+<a href="/hcr-detail-pegawai?pegawai=${p.id}&bulan=${bulan}&tahun=${tahun}"
 class="flex items-center gap-3 p-3 rounded-xl
 hover:bg-slate-50 transition">
 
@@ -681,7 +681,7 @@ ${p.nama}
 </p>
 
 <p class="text-[10px] text-slate-400">
-${p.level||'Tanpa Level'}
+${p.nip||'-'}
 </p>
 
 </div>
